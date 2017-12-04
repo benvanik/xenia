@@ -1,5 +1,0 @@
-# Copyright 2015 Ben Vanik. All Rights Reserved.
-#
-# Useful bash aliases and completions.
-
-alias xb='python xenia-build'
