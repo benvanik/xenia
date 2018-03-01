@@ -24,7 +24,11 @@
 
 // We are statically linked with the loader, so use function prototypes.
 #define VK_PROTOTYPES
+#if XE_PLATFORM_LINUX
+#include <vulkan/vulkan.h>
+#elif XE_PLATFORM_WIN32
 #include "third_party/vulkan/vulkan.h"
+#endif
 
 // NOTE: header order matters here, unfortunately:
 #include "third_party/vulkan/vk_lunarg_debug_marker.h"

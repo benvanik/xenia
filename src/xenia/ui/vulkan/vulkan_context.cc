@@ -72,7 +72,10 @@ bool VulkanContext::Initialize() {
     GtkWidget* window_handle =
         static_cast<GtkWidget*>(target_window_->native_handle());
     GdkDisplay* gdk_display = gtk_widget_get_display(window_handle);
-    assert(GDK_IS_X11_DISPLAY(gdk_display));
+    if (!GDK_IS_X11_DISPLAY(gdk_display)) {
+      XELOGE("GDK Display is not X11");
+      return false;
+    }
     xcb_connection_t* connection =
         XGetXCBConnection(gdk_x11_display_get_xdisplay(gdk_display));
     xcb_window_t window =
@@ -81,16 +84,15 @@ bool VulkanContext::Initialize() {
     create_info.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
     create_info.pNext = nullptr;
     create_info.flags = 0;
-    create_info.connection = static_cast<xcb_connection_t*>(
-        target_window_->native_platform_handle());
-    create_info.window = static_cast<xcb_window_t>(window);
+    create_info.connection = connection;
+    create_info.window = window;
     status = vkCreateXcbSurfaceKHR(*provider->instance(), &create_info, nullptr,
                                    &surface);
     CheckResult(status, "vkCreateXcbSurfaceKHR");
 #else
-#error Unsupported GDK Backend on Linux.
+#error Unsupported GDK Backend on Linux. X11 is currently only supported
 #endif  // GDK_WINDOWING_X11
-#else
+#else   // XE_PLATFORM_WIN32
 #error Platform not yet implemented.
 #endif  // XE_PLATFORM_WIN32
     if (status != VK_SUCCESS) {

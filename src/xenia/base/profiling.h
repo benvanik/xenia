@@ -17,6 +17,9 @@
 #if XE_PLATFORM_WIN32
 #define XE_OPTION_PROFILING 1
 #define XE_OPTION_PROFILING_UI 1
+#elif XE_PLATFORM_LINUX
+#define XE_OPTION_PROFILING 1
+#define XE_OPTION_PROFILING_UI 1
 #else
 #define XE_OPTION_PROFILING 0
 #endif  // XE_PLATFORM_WIN32
@@ -31,6 +34,7 @@ namespace xe {
 namespace ui {
 class MicroprofileDrawer;
 class Window;
+class KeyEvent;
 }  // namespace ui
 }  // namespace xe
 
@@ -153,8 +157,8 @@ class Profiler {
   // Deactivates the calling thread for profiling.
   static void ThreadExit();
 
-  static bool OnKeyDown(int key_code);
-  static bool OnKeyUp(int key_code);
+  static bool OnKeyDown(ui::KeyEvent* e);
+  static bool OnKeyUp(ui::KeyEvent* e);
   static void OnMouseDown(bool left_button, bool right_button);
   static void OnMouseUp();
   static void OnMouseMove(int x, int y);

@@ -25,6 +25,7 @@
 //
 //
 
+#include <cinttypes>
 
 #ifndef MICROPROFILE_ENABLED
 #error "microprofile.h must be included before including microprofileui.h"
@@ -882,7 +883,8 @@ void MicroProfileDrawDetailedBars(uint32_t nWidth, uint32_t nHeight, int nBaseY,
       int64_t nBaseTicks = bGpu ? nBaseTicksGpu : nBaseTicksCpu;
       char ThreadName[MicroProfileThreadLog::THREAD_MAX_LEN + 16];
       uint64_t nThreadId = pLog->nThreadId;
-      snprintf(ThreadName, sizeof(ThreadName)-1, "%04llx: %s", nThreadId, &pLog->ThreadName[0] );
+      snprintf(ThreadName, sizeof(ThreadName) - 1, "%04" PRIx64 ": %s",
+               nThreadId, &pLog->ThreadName[0]);
       nY += 3;
       uint32_t nThreadColor = -1;
       if(pLog->nThreadId == nContextSwitchHoverThreadAfter || pLog->nThreadId == nContextSwitchHoverThreadBefore)
@@ -1406,7 +1408,8 @@ uint32_t MicroProfileDrawBarMetaCount(int32_t nX, int32_t nY, uint64_t* pCounter
   MicroProfileLoopActiveGroupsDraw(nX, nY, pName,
     [=](uint32_t nTimer, uint32_t nIdx, uint64_t nGroupMask, uint32_t nX, uint32_t nY){
       char sBuffer[SBUF_MAX];
-      int nLen = snprintf(sBuffer, SBUF_MAX-1, "%5llu", pCounters[nTimer]);
+      int nLen =
+          snprintf(sBuffer, SBUF_MAX - 1, "%" PRIu64 "", pCounters[nTimer]);
       MicroProfileDrawText(nX + nTextWidth - nLen * (MICROPROFILE_TEXT_WIDTH+1), nY, (uint32_t)-1, sBuffer, nLen);
     });
   return 5 + nTextWidth;

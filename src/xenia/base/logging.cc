@@ -29,13 +29,14 @@
 
 // For MessageBox:
 // TODO(benvanik): generic API? logging_win.cc?
+// TODO(dougvj): For now I just inlined a small difference for linux
 #if XE_PLATFORM_WIN32
 #include "xenia/base/platform_win.h"
 #endif  // XE_PLATFORM_WIN32
 
-DEFINE_string(
-    log_file, "",
-    "Logs are written to the given file (specify stdout for command line)");
+DEFINE_string(log_file, "",
+              "Logs are written to the given file (specify stdout/stderr for "
+              "command line)");
 DEFINE_bool(log_debugprint, false, "Dump the log to DebugPrint.");
 DEFINE_bool(flush_log, true, "Flush log file after each log line batch.");
 DEFINE_int32(
@@ -60,6 +61,8 @@ class Logger {
     } else {
       if (FLAGS_log_file == "stdout") {
         file_ = stdout;
+      } else if (FLAGS_log_file == "stderr") {
+        file_ = stderr;
       } else {
         auto file_path = xe::to_wstring(FLAGS_log_file.c_str());
         xe::filesystem::CreateParentFolder(file_path);
@@ -301,6 +304,8 @@ void FatalError(const char* fmt, ...) {
     MessageBoxA(NULL, log_format_buffer_.data(), "Xenia Error",
                 MB_OK | MB_ICONERROR | MB_APPLMODAL | MB_SETFOREGROUND);
   }
+#elif XE_PLATFORM_LINUX
+  fprintf(stderr, fmt, args);
 #endif  // WIN32
 
   exit(1);

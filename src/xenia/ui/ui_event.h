@@ -40,11 +40,107 @@ class FileDropEvent : public UIEvent {
 
 class KeyEvent : public UIEvent {
  public:
-  KeyEvent(Window* target, int key_code, int repeat_count, bool prev_state,
-           bool modifier_shift_pressed, bool modifier_ctrl_pressed,
-           bool modifier_alt_pressed, bool modifier_super_pressed)
+  // TODO(dougvj) The list of keycodes is probably incomplete but may be
+  // sufficient. Maybe there is a better way?
+  enum class Key {
+    kNone = 0,
+    kEsc,
+    kF1,
+    kF2,
+    kF3,
+    kF4,
+    kF5,
+    kF6,
+    kF7,
+    kF8,
+    kF9,
+    kF10,
+    kF11,
+    kF12,
+    kTick,
+    k1,
+    k2,
+    k3,
+    k4,
+    k5,
+    k6,
+    k7,
+    k8,
+    k9,
+    k0,
+    kMinus,
+    kEquals,
+    kBackspace,
+    kTab,
+    kQ,
+    kW,
+    kE,
+    kR,
+    kT,
+    kY,
+    kU,
+    kI,
+    kO,
+    kP,
+    kLeftBracket,
+    kRightBracket,
+    kBackSlash,
+    kCapsLock,
+    kA,
+    kS,
+    kD,
+    kF,
+    kG,
+    kH,
+    kJ,
+    kK,
+    kL,
+    kSemiColon,
+    kQuote,
+    kEnter,
+    kLeftShift,
+    kZ,
+    kX,
+    kC,
+    kV,
+    kB,
+    kN,
+    kM,
+    kComma,
+    kPeriod,
+    kSlash,
+    kRightShift,
+    kLeftControl,
+    kSuper,
+    kLeftAlt,
+    kSpace,
+    kRightAlt,
+    kRightControl,
+    kUp,
+    kDown,
+    kLeft,
+    kRight,
+    kInsert,
+    kHome,
+    kPageUp,
+    kDelete,
+    kEnd,
+    kPageDown,
+    kNpStar,
+    kNpMinus,
+    kNpPlus,
+    kPause
+  };
+
+ public:
+  KeyEvent(Window* target, Key key, int native_key_code, uint32_t key_char,
+           int repeat_count, bool prev_state, bool modifier_shift_pressed,
+           bool modifier_ctrl_pressed, bool modifier_alt_pressed,
+           bool modifier_super_pressed)
       : UIEvent(target),
-        key_code_(key_code),
+        key_(key),
+        native_key_code_(native_key_code),
+        key_char_(key_char),
         repeat_count_(repeat_count),
         prev_state_(prev_state),
         modifier_shift_pressed_(modifier_shift_pressed),
@@ -56,7 +152,9 @@ class KeyEvent : public UIEvent {
   bool is_handled() const { return handled_; }
   void set_handled(bool value) { handled_ = value; }
 
-  int key_code() const { return key_code_; }
+  Key key() const { return key_; }
+  uint32_t key_char() const { return key_char_; }
+  int native_key_code() const { return native_key_code_; }
 
   int repeat_count() const { return repeat_count_; }
   bool prev_state() const { return prev_state_; }
@@ -68,7 +166,9 @@ class KeyEvent : public UIEvent {
 
  private:
   bool handled_ = false;
-  int key_code_ = 0;
+  Key key_;
+  uint32_t key_char_;
+  int native_key_code_;
 
   int repeat_count_ = 0;
   bool prev_state_ = false;  // Key previously down(true) or up(false)

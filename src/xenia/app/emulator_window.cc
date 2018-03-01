@@ -81,49 +81,49 @@ bool EmulatorWindow::Initialize() {
 
   window_->on_key_down.AddListener([this](KeyEvent* e) {
     bool handled = true;
-    switch (e->key_code()) {
-      case 0x4F: {  // o
+    switch (e->key()) {
+      case ui::KeyEvent::Key::kO: {  // o
         if (e->is_ctrl_pressed()) {
           FileOpen();
         }
       } break;
-      case 0x6A: {  // numpad *
+      case ui::KeyEvent::Key::kNpStar: {  // numpad *
         CpuTimeScalarReset();
       } break;
-      case 0x6D: {  // numpad minus
+      case ui::KeyEvent::Key::kNpMinus: {  // numpad minus
         CpuTimeScalarSetHalf();
       } break;
-      case 0x6B: {  // numpad plus
+      case ui::KeyEvent::Key::kNpPlus: {  // numpad plus
         CpuTimeScalarSetDouble();
       } break;
 
-      case 0x72: {  // F3
+      case ui::KeyEvent::Key::kF3: {  // F3
         Profiler::ToggleDisplay();
       } break;
 
-      case 0x73: {  // VK_F4
+      case ui::KeyEvent::Key::kF4: {  // VK_F4
         GpuTraceFrame();
       } break;
-      case 0x74: {  // VK_F5
+      case ui::KeyEvent::Key::kF5: {  // VK_F5
         GpuClearCaches();
       } break;
-      case 0x76: {  // VK_F7
+      case ui::KeyEvent::Key::kF7: {  // VK_F7
         // Save to file
         // TODO: Choose path based on user input, or from options
         // TODO: Spawn a new thread to do this.
         emulator()->SaveToFile(L"test.sav");
       } break;
-      case 0x77: {  // VK_F8
+      case ui::KeyEvent::Key::kF8: {  // VK_F8
         // Restore from file
         // TODO: Choose path from user
         // TODO: Spawn a new thread to do this.
         emulator()->RestoreFromFile(L"test.sav");
       } break;
-      case 0x7A: {  // VK_F11
+      case ui::KeyEvent::Key::kF11: {  // VK_F11
         ToggleFullscreen();
       } break;
-      case 0x1B: {  // VK_ESCAPE
-                    // Allow users to escape fullscreen (but not enter it).
+      case ui::KeyEvent::Key::kEsc: {  // VK_ESCAPE
+        // Allow users to escape fullscreen (but not enter it).
         if (window_->is_fullscreen()) {
           window_->ToggleFullscreen(false);
         } else {
@@ -131,11 +131,11 @@ bool EmulatorWindow::Initialize() {
         }
       } break;
 
-      case 0x13: {  // VK_PAUSE
+      case ui::KeyEvent::Key::kPause: {  // VK_PAUSE
         CpuBreakIntoDebugger();
       } break;
 
-      case 0x70: {  // VK_F1
+      case ui::KeyEvent::Key::kF1: {  // VK_F1
         ShowHelpWebsite();
       } break;
 

@@ -9,6 +9,7 @@
 
 #include "xenia/base/clock.h"
 
+#include <assert.h>
 #include <sys/time.h>
 #include <time.h>
 
@@ -17,15 +18,15 @@ namespace xe {
 uint64_t Clock::host_tick_frequency() {
   timespec res;
   clock_getres(CLOCK_MONOTONIC_RAW, &res);
-
-  return uint64_t(res.tv_sec) + uint64_t(res.tv_nsec) * 1000000000ull;
+  assert(res.tv_sec == 0);
+  return 1000000000ull / (uint64_t(res.tv_nsec));
 }
 
 uint64_t Clock::QueryHostTickCount() {
-  timespec res;
-  clock_gettime(CLOCK_MONOTONIC_RAW, &res);
+  timespec tr;
+  clock_gettime(CLOCK_MONOTONIC_RAW, &tr);
 
-  return uint64_t(res.tv_sec) + uint64_t(res.tv_nsec) * 1000000000ull;
+  return uint64_t(tr.tv_nsec) + uint64_t(tr.tv_sec) * 1000000000ull;
 }
 
 uint64_t Clock::QueryHostSystemTime() {

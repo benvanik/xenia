@@ -792,7 +792,8 @@ VkResult VulkanSwapChain::End() {
     case VK_ERROR_OUT_OF_DATE_KHR:
       // Lost presentation ability; need to recreate the swapchain.
       // TODO(benvanik): recreate swapchain.
-      assert_always("Swapchain recreation not implemented");
+      Reinitialize();
+      // assert_always("Swapchain recreation not implemented");
       break;
     case VK_ERROR_DEVICE_LOST:
       // Fatal. Device lost.

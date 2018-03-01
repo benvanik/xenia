@@ -680,9 +680,200 @@ bool Win32Window::HandleMouse(UINT message, WPARAM wParam, LPARAM lParam) {
   return e.is_handled();
 }
 
+static KeyEvent::Key MapVkKeyToKeyEventKey(LPARAM key) {
+  switch (key) {
+    case VK_ESCAPE:
+      return KeyEvent::Key::kEsc;
+    case VK_F1:
+      return KeyEvent::Key::kF1;
+    case VK_F2:
+      return KeyEvent::Key::kF2;
+    case VK_F3:
+      return KeyEvent::Key::kF3;
+    case VK_F4:
+      return KeyEvent::Key::kF4;
+    case VK_F5:
+      return KeyEvent::Key::kF5;
+    case VK_F6:
+      return KeyEvent::Key::kF6;
+    case VK_F7:
+      return KeyEvent::Key::kF7;
+    case VK_F8:
+      return KeyEvent::Key::kF8;
+    case VK_F9:
+      return KeyEvent::Key::kF9;
+    case VK_F10:
+      return KeyEvent::Key::kF10;
+    case VK_F11:
+      return KeyEvent::Key::kF11;
+    case VK_F12:
+      return KeyEvent::Key::kF12;
+    case VK_OEM_3:
+      return KeyEvent::Key::kTick;
+    // 0-9 and A-Z match ASCII
+    case '1':
+      return KeyEvent::Key::k1;
+    case '2':
+      return KeyEvent::Key::k2;
+    case '3':
+      return KeyEvent::Key::k3;
+    case '4':
+      return KeyEvent::Key::k4;
+    case '5':
+      return KeyEvent::Key::k5;
+    case '6':
+      return KeyEvent::Key::k6;
+    case '7':
+      return KeyEvent::Key::k7;
+    case '8':
+      return KeyEvent::Key::k8;
+    case '9':
+      return KeyEvent::Key::k9;
+    case '0':
+      return KeyEvent::Key::k0;
+    case VK_OEM_MINUS:
+      return KeyEvent::Key::kMinus;
+    case VK_OEM_PLUS:
+      return KeyEvent::Key::kEquals;
+    case VK_BACK:
+      return KeyEvent::Key::kBackspace;
+    case VK_TAB:
+      return KeyEvent::Key::kTab;
+    case 'Q':
+      return KeyEvent::Key::kQ;
+    case 'W':
+      return KeyEvent::Key::kW;
+    case 'E':
+      return KeyEvent::Key::kE;
+    case 'R':
+      return KeyEvent::Key::kR;
+    case 'T':
+      return KeyEvent::Key::kT;
+    case 'Y':
+      return KeyEvent::Key::kY;
+    case 'U':
+      return KeyEvent::Key::kU;
+    case 'I':
+      return KeyEvent::Key::kI;
+    case 'O':
+      return KeyEvent::Key::kO;
+    case 'P':
+      return KeyEvent::Key::kP;
+    case VK_OEM_4:
+      return KeyEvent::Key::kLeftBracket;
+    case VK_OEM_6:
+      return KeyEvent::Key::kRightBracket;
+    case VK_OEM_5:
+      return KeyEvent::Key::kBackSlash;
+    case VK_CAPITAL:
+      return KeyEvent::Key::kCapsLock;
+    case 'A':
+      return KeyEvent::Key::kA;
+    case 'S':
+      return KeyEvent::Key::kS;
+    case 'D':
+      return KeyEvent::Key::kD;
+    case 'F':
+      return KeyEvent::Key::kF;
+    case 'G':
+      return KeyEvent::Key::kG;
+    case 'H':
+      return KeyEvent::Key::kH;
+    case 'J':
+      return KeyEvent::Key::kJ;
+    case 'K':
+      return KeyEvent::Key::kK;
+    case 'L':
+      return KeyEvent::Key::kL;
+    case VK_OEM_1:
+      return KeyEvent::Key::kSemiColon;
+    case VK_OEM_7:
+      return KeyEvent::Key::kQuote;
+    case VK_RETURN:
+      return KeyEvent::Key::kEnter;
+    case VK_LSHIFT:
+      return KeyEvent::Key::kLeftShift;
+    case 'Z':
+      return KeyEvent::Key::kZ;
+    case 'X':
+      return KeyEvent::Key::kX;
+    case 'C':
+      return KeyEvent::Key::kC;
+    case 'V':
+      return KeyEvent::Key::kV;
+    case 'B':
+      return KeyEvent::Key::kB;
+    case 'N':
+      return KeyEvent::Key::kN;
+    case 'M':
+      return KeyEvent::Key::kM;
+    case VK_OEM_COMMA:
+      return KeyEvent::Key::kComma;
+    case VK_OEM_PERIOD:
+      return KeyEvent::Key::kPeriod;
+    case VK_OEM_2:
+      return KeyEvent::Key::kSlash;
+    case VK_RSHIFT:
+      return KeyEvent::Key::kRightShift;
+    case VK_LCONTROL:
+      return KeyEvent::Key::kLeftControl;
+    case VK_LWIN:
+    case VK_RWIN:
+      return KeyEvent::Key::kSuper;
+    case VK_LMENU:
+      return KeyEvent::Key::kLeftAlt;
+    case VK_SPACE:
+      return KeyEvent::Key::kSpace;
+    case VK_RMENU:
+      return KeyEvent::Key::kRightAlt;
+    case VK_RCONTROL:
+      return KeyEvent::Key::kRightControl;
+    case VK_UP:
+      return KeyEvent::Key::kUp;
+    case VK_DOWN:
+      return KeyEvent::Key::kDown;
+    case VK_LEFT:
+      return KeyEvent::Key::kLeft;
+    case VK_RIGHT:
+      return KeyEvent::Key::kRight;
+    case VK_INSERT:
+      return KeyEvent::Key::kInsert;
+    case VK_DELETE:
+      return KeyEvent::Key::kDelete;
+    case VK_HOME:
+      return KeyEvent::Key::kHome;
+    case VK_END:
+      return KeyEvent::Key::kEnd;
+    case VK_PRIOR:
+      return KeyEvent::Key::kPageUp;
+    case VK_NEXT:
+      return KeyEvent::Key::kPageDown;
+    case VK_MULTIPLY:
+      return KeyEvent::Key::kNpStar;
+    case VK_SUBTRACT:
+      return KeyEvent::Key::kNpMinus;
+    case VK_ADD:
+      return KeyEvent::Key::kNpPlus;
+    case VK_PAUSE:
+      return KeyEvent::Key::kPause;
+  }
+  return KeyEvent::Key::kNone;
+}
+
 bool Win32Window::HandleKeyboard(UINT message, WPARAM wParam, LPARAM lParam) {
+  int repeat_count = static_cast<int>(lParam & 0xFFFF);
+  int key_code = static_cast<int>(wParam);
+  KeyEvent::Key key;
+  int key_char;
+  if (message != WM_CHAR) {
+    key_char = MapVirtualKey(key_code, MAPVK_VK_TO_CHAR) & 0xFFFF;
+    key = MapVkKeyToKeyEventKey(key_code);
+  } else {
+    key_char = key_code;
+    key = KeyEvent::Key::kNone;
+  }
   auto e = KeyEvent(
-      this, static_cast<int>(wParam), lParam & 0xFFFF0000, !!(lParam & 0x2),
+      this, key, key_code, key_char, repeat_count, !!(lParam & 0x40000000),
       !!(GetKeyState(VK_SHIFT) & 0x80), !!(GetKeyState(VK_CONTROL) & 0x80),
       !!(GetKeyState(VK_MENU) & 0x80), !!(GetKeyState(VK_LWIN) & 0x80));
   switch (message) {

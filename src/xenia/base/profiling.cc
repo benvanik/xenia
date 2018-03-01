@@ -113,31 +113,34 @@ void Profiler::ThreadEnter(const char* name) {
 
 void Profiler::ThreadExit() { MicroProfileOnThreadExit(); }
 
-bool Profiler::OnKeyDown(int key_code) {
-  // http://msdn.microsoft.com/en-us/library/windows/desktop/dd375731(v=vs.85).aspx
-  switch (key_code) {
-    case VK_OEM_3:  // `
+bool Profiler::OnKeyDown(ui::KeyEvent* e) {
+  switch (e->key()) {
+    case xe::ui::KeyEvent::Key::kTick:  // `
       MicroProfileTogglePause();
       return true;
 #if XE_OPTION_PROFILING_UI
-    case VK_TAB:
+    case xe::ui::KeyEvent::Key::kTab:  // VK_TAB:
       MicroProfileToggleDisplayMode();
       return true;
-    case 0x31:  // 1
+    case xe::ui::KeyEvent::Key::k1:  // 1
       MicroProfileModKey(1);
       return true;
 #endif  // XE_OPTION_PROFILING_UI
+    default:
+      return false;
   }
   return false;
 }
 
-bool Profiler::OnKeyUp(int key_code) {
-  switch (key_code) {
+bool Profiler::OnKeyUp(ui::KeyEvent* e) {
+  switch (e->key()) {
 #if XE_OPTION_PROFILING_UI
-    case 0x31:  // 1
+    case xe::ui::KeyEvent::Key::k1:  // 1
       MicroProfileModKey(0);
       return true;
 #endif  // XE_OPTION_PROFILING_UI
+    default:
+      return false;
   }
   return false;
 }
@@ -220,14 +223,14 @@ void Profiler::set_window(ui::Window* window) {
   // Watch for toggle/mode keys and such.
   window_->on_key_down.AddListener([](ui::KeyEvent* e) {
     if (Profiler::is_visible()) {
-      Profiler::OnKeyDown(e->key_code());
+      Profiler::OnKeyDown(e);
       e->set_handled(true);
       window_->Invalidate();
     }
   });
   window_->on_key_up.AddListener([](ui::KeyEvent* e) {
     if (Profiler::is_visible()) {
-      Profiler::OnKeyUp(e->key_code());
+      Profiler::OnKeyUp(e);
       e->set_handled(true);
       window_->Invalidate();
     }
@@ -258,8 +261,8 @@ void Profiler::Shutdown() {}
 uint32_t Profiler::GetColor(const char* str) { return 0; }
 void Profiler::ThreadEnter(const char* name) {}
 void Profiler::ThreadExit() {}
-bool Profiler::OnKeyDown(int key_code) { return false; }
-bool Profiler::OnKeyUp(int key_code) { return false; }
+bool Profiler::OnKeyDown(ui::KeyEvent* e) { return false; }
+bool Profiler::OnKeyUp(ui::KeyEvent* e) { return false; }
 void Profiler::OnMouseDown(bool left_button, bool right_button) {}
 void Profiler::OnMouseUp() {}
 void Profiler::OnMouseMove(int x, int y) {}

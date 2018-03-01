@@ -135,8 +135,8 @@ bool TraceViewer::Setup() {
 
   window_->set_imgui_input_enabled(true);
 
-  window_->on_key_char.AddListener([&](xe::ui::KeyEvent* e) {
-    if (e->key_code() == 0x74 /* VK_F5 */) {
+  window_->on_key_down.AddListener([&](xe::ui::KeyEvent* e) {
+    if (e->key() == ui::KeyEvent::Key::kF5) {
       graphics_system_->ClearCaches();
       e->set_handled(true);
     }

@@ -31,12 +31,13 @@ project("xenia-ui-window-vulkan-demo")
   links({
     "gflags",
     "imgui",
-    "vulkan-loader",
     "xenia-base",
     "xenia-ui",
     "xenia-ui-spirv",
     "xenia-ui-vulkan",
   })
+
+
   flags({
     "WinMain",  -- Use WinMain instead of main.
   })
@@ -54,3 +55,7 @@ project("xenia-ui-window-vulkan-demo")
   resincludedirs({
     project_root,
   })
+  filter("platforms:Windows")
+    links({
+      "vulkan-loader",
+    })

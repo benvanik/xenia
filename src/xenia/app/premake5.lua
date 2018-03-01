@@ -17,7 +17,6 @@ project("xenia-app")
     "libavutil",
     "snappy",
     "spirv-tools",
-    "vulkan-loader",
     "xenia-apu",
     "xenia-apu-nop",
     "xenia-base",
@@ -65,6 +64,7 @@ project("xenia-app")
       "xenia-apu-xaudio2",
       "xenia-hid-winkey",
       "xenia-hid-xinput",
+      "vulkan-loader",
     })
 
   filter("platforms:Windows")

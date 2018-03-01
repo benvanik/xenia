@@ -36,8 +36,8 @@ int window_demo_main(const std::vector<std::wstring>& args) {
   auto loop = ui::Loop::Create();
   auto window = xe::ui::Window::Create(loop.get(), GetEntryInfo().name);
   loop->PostSynchronous([&window]() {
-    xe::threading::set_name("Win32 Loop");
-    xe::Profiler::ThreadEnter("Win32 Loop");
+    xe::threading::set_name("GUI Loop");
+    xe::Profiler::ThreadEnter("GUI Loop");
     if (!window->Initialize()) {
       FatalError("Failed to initialize main window");
       return;
@@ -94,19 +94,17 @@ int window_demo_main(const std::vector<std::wstring>& args) {
   loop->on_quit.AddListener([&window](xe::ui::UIEvent* e) { window.reset(); });
 
   window->on_key_down.AddListener([](xe::ui::KeyEvent* e) {
-    switch (e->key_code()) {
-      case 0x72: {  // F3
+    switch (e->key()) {
+      case KeyEvent::Key::kF3: {  // F3
         Profiler::ToggleDisplay();
       } break;
-    }
+      default: { } break; }
   });
 
   window->on_painting.AddListener([&](xe::ui::UIEvent* e) {
     auto& io = window->imgui_drawer()->GetIO();
-
     ImGui::ShowTestWindow();
     ImGui::ShowMetricsWindow();
-
     // Continuous paint.
     window->Invalidate();
   });

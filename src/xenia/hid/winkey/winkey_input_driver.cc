@@ -25,7 +25,7 @@ WinKeyInputDriver::WinKeyInputDriver(xe::ui::Window* window)
     auto global_lock = global_critical_region_.Acquire();
 
     KeyEvent key;
-    key.vkey = evt->key_code();
+    key.vkey = evt->native_key_code();
     key.transition = true;
     key.prev_state = evt->prev_state();
     key.repeat_count = evt->repeat_count();
@@ -35,7 +35,7 @@ WinKeyInputDriver::WinKeyInputDriver(xe::ui::Window* window)
     auto global_lock = global_critical_region_.Acquire();
 
     KeyEvent key;
-    key.vkey = evt->key_code();
+    key.vkey = evt->native_key_code();
     key.transition = false;
     key.prev_state = evt->prev_state();
     key.repeat_count = evt->repeat_count();

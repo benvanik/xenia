@@ -170,7 +170,6 @@ void Window::OnPaint(UIEvent* e) {
   if (!context_) {
     return;
   }
-
   ++frame_count_;
   ++fps_frame_count_;
   uint64_t now_ns = xe::Clock::QueryHostSystemTime();
@@ -249,20 +248,24 @@ void Window::OnLostFocus(UIEvent* e) {
 
 void Window::OnKeyPress(KeyEvent* e, bool is_down, bool is_char) {
   if (!is_char) {
-    switch (e->key_code()) {
-      case 16:
+    switch (e->key()) {
+      case ui::KeyEvent::Key::kLeftShift:
+      case ui::KeyEvent::Key::kRightShift:
         modifier_shift_pressed_ = is_down;
         break;
-      case 17:
+      case ui::KeyEvent::Key::kLeftControl:
+      case ui::KeyEvent::Key::kRightControl:
         modifier_cntrl_pressed_ = is_down;
         break;
       // case xx:
       //  // alt ??
       //  modifier_alt_pressed_ = is_down;
       //  break;
-      case 91:
+      case ui::KeyEvent::Key::kSuper:
         modifier_super_pressed_ = is_down;
         break;
+      default:
+        break;  // do nothing
     }
   }
 }

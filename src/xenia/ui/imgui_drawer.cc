@@ -117,23 +117,27 @@ void ImGuiDrawer::Initialize() {
   style.Colors[ImGuiCol_ModalWindowDarkening] =
       ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
 
-  io.KeyMap[ImGuiKey_Tab] = 0x09;  // VK_TAB;
-  io.KeyMap[ImGuiKey_LeftArrow] = 0x25;
-  io.KeyMap[ImGuiKey_RightArrow] = 0x27;
-  io.KeyMap[ImGuiKey_UpArrow] = 0x26;
-  io.KeyMap[ImGuiKey_DownArrow] = 0x28;
-  io.KeyMap[ImGuiKey_Home] = 0x24;
-  io.KeyMap[ImGuiKey_End] = 0x23;
-  io.KeyMap[ImGuiKey_Delete] = 0x2E;
-  io.KeyMap[ImGuiKey_Backspace] = 0x08;
-  io.KeyMap[ImGuiKey_Enter] = 0x0D;
-  io.KeyMap[ImGuiKey_Escape] = 0x1B;
-  io.KeyMap[ImGuiKey_A] = 'A';
-  io.KeyMap[ImGuiKey_C] = 'C';
-  io.KeyMap[ImGuiKey_V] = 'V';
-  io.KeyMap[ImGuiKey_X] = 'X';
-  io.KeyMap[ImGuiKey_Y] = 'Y';
-  io.KeyMap[ImGuiKey_Z] = 'Z';
+  io.KeyMap[ImGuiKey_Tab] = static_cast<int>(xe::ui::KeyEvent::Key::kTab);
+  io.KeyMap[ImGuiKey_LeftArrow] =
+      static_cast<int>(xe::ui::KeyEvent::Key::kLeft);
+  io.KeyMap[ImGuiKey_RightArrow] =
+      static_cast<int>(xe::ui::KeyEvent::Key::kRight);
+  io.KeyMap[ImGuiKey_UpArrow] = static_cast<int>(xe::ui::KeyEvent::Key::kUp);
+  io.KeyMap[ImGuiKey_DownArrow] =
+      static_cast<int>(xe::ui::KeyEvent::Key::kDown);
+  io.KeyMap[ImGuiKey_Home] = static_cast<int>(xe::ui::KeyEvent::Key::kHome);
+  io.KeyMap[ImGuiKey_End] = static_cast<int>(xe::ui::KeyEvent::Key::kEnd);
+  io.KeyMap[ImGuiKey_Delete] = static_cast<int>(xe::ui::KeyEvent::Key::kDelete);
+  io.KeyMap[ImGuiKey_Backspace] =
+      static_cast<int>(xe::ui::KeyEvent::Key::kBackspace);
+  io.KeyMap[ImGuiKey_Enter] = static_cast<int>(xe::ui::KeyEvent::Key::kEnter);
+  io.KeyMap[ImGuiKey_Escape] = static_cast<int>(xe::ui::KeyEvent::Key::kEsc);
+  io.KeyMap[ImGuiKey_A] = static_cast<int>(xe::ui::KeyEvent::Key::kA);
+  io.KeyMap[ImGuiKey_C] = static_cast<int>(xe::ui::KeyEvent::Key::kV);
+  io.KeyMap[ImGuiKey_V] = static_cast<int>(xe::ui::KeyEvent::Key::kV);
+  io.KeyMap[ImGuiKey_X] = static_cast<int>(xe::ui::KeyEvent::Key::kX);
+  io.KeyMap[ImGuiKey_Y] = static_cast<int>(xe::ui::KeyEvent::Key::kY);
+  io.KeyMap[ImGuiKey_Z] = static_cast<int>(xe::ui::KeyEvent::Key::kZ);
 }
 
 void ImGuiDrawer::SetupFont() {
@@ -237,36 +241,42 @@ ImGuiIO& ImGuiDrawer::GetIO() {
 
 void ImGuiDrawer::OnKeyDown(KeyEvent* e) {
   auto& io = GetIO();
-  io.KeysDown[e->key_code()] = true;
-  switch (e->key_code()) {
-    case 16: {
+  io.KeysDown[static_cast<int>(e->key())] = true;
+  switch (e->key()) {
+    case xe::ui::KeyEvent::Key::kRightShift:
+    case xe::ui::KeyEvent::Key::kLeftShift: {
       io.KeyShift = true;
     } break;
-    case 17: {
+    case xe::ui::KeyEvent::Key::kRightControl:
+    case xe::ui::KeyEvent::Key::kLeftControl: {
       io.KeyCtrl = true;
     } break;
+    default:
+      break;  // do nothing
   }
 }
 
 void ImGuiDrawer::OnKeyUp(KeyEvent* e) {
   auto& io = GetIO();
-  io.KeysDown[e->key_code()] = false;
-  switch (e->key_code()) {
-    case 16: {
+  io.KeysDown[static_cast<int>(e->key())] = false;
+  switch (e->key()) {
+    case xe::ui::KeyEvent::Key::kRightShift:
+    case xe::ui::KeyEvent::Key::kLeftShift: {
       io.KeyShift = false;
     } break;
-    case 17: {
+    case xe::ui::KeyEvent::Key::kRightControl:
+    case xe::ui::KeyEvent::Key::kLeftControl: {
       io.KeyCtrl = false;
     } break;
+    default:
+      break;  // do nothing
   }
 }
 
 void ImGuiDrawer::OnKeyChar(KeyEvent* e) {
   auto& io = GetIO();
-  if (e->key_code() > 0 && e->key_code() < 0x10000) {
-    io.AddInputCharacter(e->key_code());
-    e->set_handled(true);
-  }
+  io.AddInputCharacter(e->key_char());
+  e->set_handled(true);
 }
 
 void ImGuiDrawer::OnMouseDown(MouseEvent* e) {

@@ -10,6 +10,7 @@ project("xenia-cpu-ppc-tests")
     "xenia-core",
     "xenia-cpu-backend-x64",
     "xenia-cpu",
+    "xenia-ui",
     "xenia-base",
     "gflags",
     "capstone", -- cpu-backend-x64
