@@ -28,6 +28,7 @@ project("xenia-app")
     "xenia-ui",
     "xenia-ui-spirv",
     "xenia-ui-vulkan",
+    "xenia-patcher",
     "xenia-vfs",
   })
   links({
