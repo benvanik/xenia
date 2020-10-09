@@ -13,6 +13,7 @@
 
 #include "xenia/base/byte_stream.h"
 #include "xenia/base/logging.h"
+#include "xenia/base/xxhash.h"
 #include "xenia/cpu/elf_module.h"
 #include "xenia/cpu/processor.h"
 #include "xenia/cpu/xex_module.h"
@@ -72,6 +73,12 @@ X_STATUS UserModule::LoadFromFile(const std::string_view path) {
 
     // Load the module.
     result = LoadFromMemory(mmap->data(), mmap->size());
+    if (XSUCCEEDED(result)) {
+      XXH3_state_t hash_state;
+      XXH3_64bits_reset(&hash_state);
+      XXH3_64bits_update(&hash_state, mmap->data(), mmap->size());
+      hash_ = XXH3_64bits_digest(&hash_state);
+    }
   } else {
     std::vector<uint8_t> buffer(fs_entry->size());
 
@@ -93,6 +100,12 @@ X_STATUS UserModule::LoadFromFile(const std::string_view path) {
     // Load the module.
     result = LoadFromMemory(buffer.data(), bytes_read);
 
+    // Generate xex hash
+    XXH3_state_t hash_state;
+    XXH3_64bits_reset(&hash_state);
+    XXH3_64bits_update(&hash_state, buffer.data(), bytes_read);
+    hash_ = XXH3_64bits_digest(&hash_state);
+
     // Close the file.
     file->Destroy();
   }
@@ -101,6 +114,8 @@ X_STATUS UserModule::LoadFromFile(const std::string_view path) {
   if (result != X_STATUS_PENDING) {
     return result;
   }
+
+  XELOGI("Module hash: {:08X} for {}", hash_, name_);
 
   if (cvars::xex_apply_patches) {
     // Search for xexp patch file
