@@ -31,6 +31,7 @@ class HostPathEntry : public Entry {
                                xe::filesystem::FileInfo file_info);
 
   const std::filesystem::path& host_path() { return host_path_; }
+  void SetHostFileName(const std::string_view filename) override;
 
   X_STATUS Open(uint32_t desired_access, File** out_file) override;
 

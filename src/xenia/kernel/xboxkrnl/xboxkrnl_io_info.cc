@@ -237,6 +237,40 @@ dword_result_t NtSetInformationFile(
       }
       break;
     }
+    case XFileRenameInformation: {
+      auto info = info_ptr.as<X_FILE_RENAME_INFORMATION*>();
+      auto root_handle = uint32_t(info->root_dir_handle);
+
+      vfs::Entry* root_entry = nullptr;
+
+      // Compute path, possibly attrs relative.
+      std::filesystem::path target_path =
+          util::TranslateAnsiString(kernel_memory(), &info->ansi_string);
+
+      // Place IsValidPath in path from where it can be accessed everywhere
+      // if (!IsValidPath(target_path, false)) {
+      //  return X_STATUS_OBJECT_NAME_INVALID;
+      //}
+
+      // Should we care about root_handle? We already have whole path to file
+      if (root_handle != 0xFFFFFFFD && root_handle != 0) {
+        assert_always();
+        auto root_file =
+            kernel_state()->object_table()->LookupObject<XFile>(root_handle);
+        assert_not_null(root_file);
+        assert_true(root_file->type() == XObject::Type::File);
+
+        root_entry = root_file->entry();
+      }
+
+      if (target_path.has_filename()) {
+        file->SetName(target_path.filename().string());
+      } else {
+        result = X_STATUS_INVALID_PARAMETER;
+      }
+      out_length = sizeof(*info);
+      break;
+    }
     default:
       // Unsupported, for now.
       assert_always();

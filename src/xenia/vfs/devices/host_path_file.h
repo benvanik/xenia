@@ -33,6 +33,7 @@ class HostPathFile : public File {
   X_STATUS WriteSync(const void* buffer, size_t buffer_length,
                      size_t byte_offset, size_t* out_bytes_written) override;
   X_STATUS SetLength(size_t length) override;
+  X_STATUS SetName(const std::string_view file_name) override;
 
  private:
   std::unique_ptr<xe::filesystem::FileHandle> file_handle_;

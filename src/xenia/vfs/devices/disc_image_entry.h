@@ -35,6 +35,7 @@ class DiscImageEntry : public Entry {
   size_t data_offset() const { return data_offset_; }
   size_t data_size() const { return data_size_; }
 
+  void SetHostFileName(const std::string_view filename) override { return; }
   X_STATUS Open(uint32_t desired_access, File** out_file) override;
 
   bool can_map() const override { return true; }

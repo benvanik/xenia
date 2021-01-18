@@ -82,6 +82,8 @@ class FileHandle {
 
   const std::filesystem::path& path() const { return path_; }
 
+  bool Rename(const std::string_view file_name);
+
   // Reads the requested number of bytes from the file starting at the given
   // offset. The total number of bytes read is returned only if the complete
   // read succeeds.
