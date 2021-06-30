@@ -64,6 +64,21 @@ VulkanInstance::VulkanInstance() {
 
   DeclareRequiredExtension(VK_EXT_DEBUG_MARKER_EXTENSION_NAME,
                            Version::Make(0, 0, 0), true);
+  DeclareRequiredExtension(VK_KHR_SURFACE_EXTENSION_NAME,
+                           Version::Make(0, 0, 0), true);
+#if XE_PLATFORM_WIN32
+  DeclareRequiredExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
+                           Version::Make(0, 0, 0), true);
+#elif XE_PLATFORM_LINUX
+#ifdef GDK_WINDOWING_X11
+  DeclareRequiredExtension(VK_KHR_XCB_SURFACE_EXTENSION_NAME,
+                           Version::Make(0, 0, 0), true);
+#else
+#error No Vulkan surface extension for the GDK backend defined yet.
+#endif
+#else
+#error No Vulkan surface extension for the platform defined yet.
+#endif
 }
 
 VulkanInstance::~VulkanInstance() { DestroyInstance(); }
@@ -203,6 +218,43 @@ bool VulkanInstance::QueryGlobals() {
   return true;
 }
 
+VkBool32 VKAPI_PTR DebugMessageCallback(VkDebugReportFlagsEXT flags,
+                                        VkDebugReportObjectTypeEXT objectType,
+                                        uint64_t object, size_t location,
+                                        int32_t messageCode,
+                                        const char* pLayerPrefix,
+                                        const char* pMessage, void* pUserData) {
+  if (strcmp(pLayerPrefix, "Validation") == 0) {
+    const char* blacklist[] = {
+        "bound but it was never updated. You may want to either update it or "
+        "not bind it.",
+        "is being used in draw but has not been updated.",
+    };
+    for (uint32_t i = 0; i < xe::countof(blacklist); ++i) {
+      if (strstr(pMessage, blacklist[i]) != nullptr) {
+        return false;
+      }
+    }
+  }
+
+  auto instance = reinterpret_cast<VulkanInstance*>(pUserData);
+  const char* message_type = "UNKNOWN";
+  if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
+    message_type = "ERROR";
+  } else if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) {
+    message_type = "WARN";
+  } else if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) {
+    message_type = "PERF WARN";
+  } else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) {
+    message_type = "INFO";
+  } else if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
+    message_type = "DEBUG";
+  }
+
+  XELOGVK("[{}/{}:{}] {}", pLayerPrefix, message_type, messageCode, pMessage);
+  return false;
+}
+
 bool VulkanInstance::CreateInstance() {
   XELOGVK("Verifying layers and extensions...");
 
@@ -224,10 +276,21 @@ bool VulkanInstance::CreateInstance() {
 
   XELOGVK("Initializing application instance...");
 
+  VkDebugReportCallbackCreateInfoEXT debug_info;
+  debug_info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
+  debug_info.pNext = nullptr;
+  // TODO(benvanik): flags to set these.
+  debug_info.flags =
+      VK_DEBUG_REPORT_INFORMATION_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT |
+      VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
+      VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_DEBUG_BIT_EXT;
+  debug_info.pfnCallback = &DebugMessageCallback;
+  debug_info.pUserData = this;
+
   // TODO(benvanik): use GetEntryInfo?
   VkApplicationInfo application_info;
   application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-  application_info.pNext = nullptr;
+  application_info.pNext = &debug_info;
   application_info.pApplicationName = "xenia";
   application_info.applicationVersion = 1;
   application_info.pEngineName = "xenia";
@@ -273,7 +336,7 @@ bool VulkanInstance::CreateInstance() {
       return false;
   }
 
-  // Load Vulkan entrypoints and extensions.
+  // Load Vulkan entry points and extensions.
   volkLoadInstance(handle);
 
   // Enable debug validation, if needed.
@@ -289,43 +352,6 @@ void VulkanInstance::DestroyInstance() {
   DisableDebugValidation();
   vkDestroyInstance(handle, nullptr);
   handle = nullptr;
-}
-
-VkBool32 VKAPI_PTR DebugMessageCallback(VkDebugReportFlagsEXT flags,
-                                        VkDebugReportObjectTypeEXT objectType,
-                                        uint64_t object, size_t location,
-                                        int32_t messageCode,
-                                        const char* pLayerPrefix,
-                                        const char* pMessage, void* pUserData) {
-  if (strcmp(pLayerPrefix, "Validation") == 0) {
-    const char* blacklist[] = {
-        "bound but it was never updated. You may want to either update it or "
-        "not bind it.",
-        "is being used in draw but has not been updated.",
-    };
-    for (uint32_t i = 0; i < xe::countof(blacklist); ++i) {
-      if (strstr(pMessage, blacklist[i]) != nullptr) {
-        return false;
-      }
-    }
-  }
-
-  auto instance = reinterpret_cast<VulkanInstance*>(pUserData);
-  const char* message_type = "UNKNOWN";
-  if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
-    message_type = "ERROR";
-  } else if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) {
-    message_type = "WARN";
-  } else if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) {
-    message_type = "PERF WARN";
-  } else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) {
-    message_type = "INFO";
-  } else if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
-    message_type = "DEBUG";
-  }
-
-  XELOGVK("[{}/{}:{}] {}", pLayerPrefix, message_type, messageCode, pMessage);
-  return false;
 }
 
 void VulkanInstance::EnableDebugValidation() {

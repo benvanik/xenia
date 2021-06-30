@@ -15,6 +15,7 @@
 
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
+#include <xcb/xcb.h>
 
 #include "xenia/base/platform_linux.h"
 #include "xenia/ui/menu_item.h"
@@ -31,9 +32,10 @@ class GTKWindow : public Window {
   ~GTKWindow() override;
 
   NativePlatformHandle native_platform_handle() const override {
-    return nullptr;
+    return connection_;
   }
   NativeWindowHandle native_handle() const override { return window_; }
+  GtkWidget* native_window_handle() const { return drawing_area_; }
 
   void EnableMainMenu() override {}
   void DisableMainMenu() override {}
@@ -74,14 +76,22 @@ class GTKWindow : public Window {
  private:
   void Create();
   GtkWidget* window_;
+  GtkWidget* box_;
+  GtkWidget* drawing_area_;
+  xcb_connection_t* connection_;
 
-  friend void gtk_event_handler_(GtkWidget*, GdkEvent*, gpointer);
+  // C Callback shims for GTK
+  friend gboolean gtk_event_handler(GtkWidget*, GdkEvent*, gpointer);
+  friend gboolean close_callback(GtkWidget*, gpointer);
+  friend gboolean draw_callback(GtkWidget*, GdkFrameClock*, gpointer);
+
   bool HandleMouse(GdkEventAny* event);
   bool HandleKeyboard(GdkEventKey* event);
   bool HandleWindowResize(GdkEventConfigure* event);
   bool HandleWindowFocus(GdkEventFocus* event);
   bool HandleWindowVisibility(GdkEventVisibility* event);
   bool HandleWindowOwnerChange(GdkEventOwnerChange* event);
+  bool HandleWindowPaint();
 
   bool closing_ = false;
   bool fullscreen_ = false;
@@ -95,6 +105,7 @@ class GTKMenuItem : public MenuItem {
 
   GtkWidget* handle() { return menu_; }
   using MenuItem::OnSelected;
+  void Activate();
 
   void EnableMenuItem(Window& window) override {}
   void DisableMenuItem(Window& window) override {}

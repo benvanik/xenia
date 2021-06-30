@@ -70,7 +70,7 @@ int window_demo_main(const std::vector<std::string>& args) {
   std::unique_ptr<GraphicsProvider> graphics_provider;
   loop->PostSynchronous([&window, &graphics_provider]() {
     // Create graphics provider and an initial context for the window.
-    // The window will finish initialization wtih the context (loading
+    // The window will finish initialization with the context (loading
     // resources, etc).
     graphics_provider = CreateDemoGraphicsProvider(window.get());
     window->set_context(graphics_provider->CreateContext(window.get()));

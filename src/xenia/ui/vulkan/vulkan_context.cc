@@ -52,7 +52,6 @@ VulkanContext::~VulkanContext() {
 
 bool VulkanContext::Initialize() {
   auto provider = static_cast<VulkanProvider*>(provider_);
-  auto device = provider->device();
 
   if (target_window_) {
     // Create swap chain used to present to the window.
@@ -72,11 +71,7 @@ bool VulkanContext::Initialize() {
 #elif XE_PLATFORM_LINUX
 #ifdef GDK_WINDOWING_X11
     GtkWidget* window_handle =
-        static_cast<GtkWidget*>(target_window_->native_handle());
-    GdkDisplay* gdk_display = gtk_widget_get_display(window_handle);
-    assert(GDK_IS_X11_DISPLAY(gdk_display));
-    xcb_connection_t* connection =
-        XGetXCBConnection(gdk_x11_display_get_xdisplay(gdk_display));
+        dynamic_cast<GTKWindow*>(target_window_)->native_window_handle();
     xcb_window_t window =
         gdk_x11_window_get_xid(gtk_widget_get_window(window_handle));
     VkXcbSurfaceCreateInfoKHR create_info;

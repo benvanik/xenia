@@ -17,15 +17,6 @@
 namespace xe {
 namespace ui {
 
-class PostedFn {
- public:
-  explicit PostedFn(std::function<void()> fn) : fn_(std::move(fn)) {}
-  void Call() { fn_(); }
-
- private:
-  std::function<void()> fn_;
-};
-
 std::unique_ptr<Loop> Loop::Create() { return std::make_unique<GTKLoop>(); }
 
 GTKLoop::GTKLoop() : thread_id_() {
@@ -56,24 +47,33 @@ bool GTKLoop::is_on_loop_thread() {
 }
 
 gboolean _posted_fn_thunk(gpointer posted_fn) {
-  PostedFn* Fn = reinterpret_cast<PostedFn*>(posted_fn);
-  Fn->Call();
+  // convert gpointer back to std::function, call it, then free std::function
+  std::function<void()>* f =
+      reinterpret_cast<std::function<void()>*>(posted_fn);
+  std::function<void()>& func = *f;
+  func();
+  delete f;
+  // Tells GDK we don't want to run this again
   return G_SOURCE_REMOVE;
 }
 
 void GTKLoop::Post(std::function<void()> fn) {
   assert_true(thread_id_ != std::thread::id());
-  gdk_threads_add_idle(_posted_fn_thunk,
-                       reinterpret_cast<gpointer>(new PostedFn(std::move(fn))));
+  // converting std::function to a generic pointer for gdk
+  gdk_threads_add_idle(_posted_fn_thunk, reinterpret_cast<gpointer>(
+                                             new std::function<void()>(fn)));
 }
 
 void GTKLoop::PostDelayed(std::function<void()> fn, uint64_t delay_millis) {
   gdk_threads_add_timeout(
       delay_millis, _posted_fn_thunk,
-      reinterpret_cast<gpointer>(new PostedFn(std::move(fn))));
+      reinterpret_cast<gpointer>(new std::function<void()>(fn)));
 }
 
-void GTKLoop::Quit() { assert_true(thread_id_ != std::thread::id()); }
+void GTKLoop::Quit() {
+  assert_true(thread_id_ != std::thread::id());
+  Post([]() { gtk_main_quit(); });
+}
 
 void GTKLoop::AwaitQuit() { quit_fence_.Wait(); }
 

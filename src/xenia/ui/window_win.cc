@@ -446,6 +446,7 @@ void Win32Window::Close() {
   closing_ = true;
   OnClose();
   DestroyWindow(hwnd_);
+  hwnd_ = 0;
 }
 
 void Win32Window::OnMainMenuChange() {

@@ -52,10 +52,13 @@ bool VulkanProvider::Initialize() {
   instance_ = std::make_unique<VulkanInstance>();
 
   // Always enable the swapchain.
+  instance_->DeclareRequiredExtension(VK_KHR_SURFACE_EXTENSION_NAME,
+                                      Version::Make(0, 0, 0), false);
 #if XE_PLATFORM_WIN32
-  instance_->DeclareRequiredExtension("VK_KHR_surface", Version::Make(0, 0, 0),
-                                      false);
-  instance_->DeclareRequiredExtension("VK_KHR_win32_surface",
+  instance_->DeclareRequiredExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
+                                      Version::Make(0, 0, 0), false);
+#elif XE_PLATFORM_LINUX
+  instance_->DeclareRequiredExtension(VK_KHR_XCB_SURFACE_EXTENSION_NAME,
                                       Version::Make(0, 0, 0), false);
 #endif
 

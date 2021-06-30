@@ -172,8 +172,9 @@ class Window {
   Loop* loop_ = nullptr;
   std::unique_ptr<MenuItem> main_menu_;
   std::string title_;
-  int32_t width_ = 0;
-  int32_t height_ = 0;
+  // GTK must have a default value here that isn't 0
+  int32_t width_ = 1280;
+  int32_t height_ = 720;
   bool has_focus_ = true;
   bool is_cursor_visible_ = true;
   bool is_imgui_input_enabled_ = false;
