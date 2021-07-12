@@ -1,0 +1,143 @@
+/**
+ ******************************************************************************
+ * Xenia : Xbox 360 Emulator Research Project                                 *
+ ******************************************************************************
+ * Copyright 2021 Ben Vanik. All rights reserved.                             *
+ * Released under the BSD license - see LICENSE in the root for more details. *
+ ******************************************************************************
+ */
+
+// This is a partial file designed to be included by other files when
+// constructing various tables.
+
+#ifndef XE_COUNTRY
+#define XE_COUNTRY(name, id, locale)
+#endif
+
+#ifndef XE_COUNTRY_SUFFIX
+#define XE_COUNTRY_SUFFIX(name, id, suffix, locale)
+#endif
+
+#ifndef XE_COUNTRY_MAXIMUM
+#define XE_COUNTRY_MAXIMUM(name)
+#endif
+
+// clang-format off
+
+XE_COUNTRY(ZZ,   0, ZZ)
+XE_COUNTRY(AE,   1, AE)
+XE_COUNTRY(AL,   2, ZZ)
+XE_COUNTRY(AM,   3, ZZ)
+XE_COUNTRY(AR,   4, AR)
+XE_COUNTRY(AT,   5, AT)
+XE_COUNTRY(AU,   6, AU)
+XE_COUNTRY(AZ,   7, ZZ)
+XE_COUNTRY(BE,   8, BE)
+XE_COUNTRY(BG,   9, ZZ)
+XE_COUNTRY(BH,  10, ZZ)
+XE_COUNTRY(BN,  11, ZZ)
+XE_COUNTRY(BO,  12, ZZ)
+XE_COUNTRY(BR,  13, BR)
+XE_COUNTRY(BY,  14, ZZ)
+XE_COUNTRY(BZ,  15, ZZ)
+XE_COUNTRY(CA,  16, CA)
+XE_COUNTRY(CH,  18, CH)
+XE_COUNTRY(CL,  19, CL)
+XE_COUNTRY(CN,  20, CN)
+XE_COUNTRY(CO,  21, CO)
+XE_COUNTRY(CR,  22, ZZ)
+XE_COUNTRY(CZ,  23, CZ)
+XE_COUNTRY(DE,  24, DE)
+XE_COUNTRY(DK,  25, DK)
+XE_COUNTRY(DO,  26, ZZ)
+XE_COUNTRY(DZ,  27, ZZ)
+XE_COUNTRY(EC,  28, ZZ)
+XE_COUNTRY(EE,  29, ZZ)
+XE_COUNTRY(EG,  30, ZZ)
+XE_COUNTRY(ES,  31, ES)
+XE_COUNTRY(FI,  32, FI)
+XE_COUNTRY(FO,  33, ZZ)
+XE_COUNTRY(FR,  34, FR)
+XE_COUNTRY(GB,  35, GB)
+XE_COUNTRY(GE,  36, ZZ)
+XE_COUNTRY(GR,  37, GR)
+XE_COUNTRY(GT,  38, ZZ)
+XE_COUNTRY(HK,  39, HK)
+XE_COUNTRY(HN,  40, ZZ)
+XE_COUNTRY(HR,  41, ZZ)
+XE_COUNTRY(HU,  42, HU)
+XE_COUNTRY(ID,  43, ZZ)
+XE_COUNTRY(IE,  44, IE)
+XE_COUNTRY(IL,  45, IL)
+XE_COUNTRY(IN,  46, IN)
+XE_COUNTRY(IQ,  47, ZZ)
+XE_COUNTRY(IR,  48, ZZ)
+XE_COUNTRY(IS,  49, ZZ)
+XE_COUNTRY(IT,  50, IT)
+XE_COUNTRY(JM,  51, ZZ)
+XE_COUNTRY(JO,  52, ZZ)
+XE_COUNTRY(JP,  53, JP)
+XE_COUNTRY(KE,  54, ZZ)
+XE_COUNTRY(KG,  55, ZZ)
+XE_COUNTRY(KR,  56, KR)
+XE_COUNTRY(KW,  57, ZZ)
+XE_COUNTRY(KZ,  58, ZZ)
+XE_COUNTRY(LB,  59, ZZ)
+XE_COUNTRY(LI,  60, ZZ)
+XE_COUNTRY(LT,  61, ZZ)
+XE_COUNTRY(LU,  62, ZZ)
+XE_COUNTRY(LV,  63, ZZ)
+XE_COUNTRY(LY,  64, ZZ)
+XE_COUNTRY(MA,  65, ZZ)
+XE_COUNTRY(MC,  66, ZZ)
+XE_COUNTRY(MK,  67, ZZ)
+XE_COUNTRY(MN,  68, ZZ)
+XE_COUNTRY(MO,  69, ZZ)
+XE_COUNTRY(MV,  70, ZZ)
+XE_COUNTRY(MX,  71, MX)
+XE_COUNTRY(MY,  72, ZZ)
+XE_COUNTRY(NI,  73, ZZ)
+XE_COUNTRY(NL,  74, NL)
+XE_COUNTRY(NO,  75, NO)
+XE_COUNTRY(NZ,  76, NZ)
+XE_COUNTRY(OM,  77, ZZ)
+XE_COUNTRY(PA,  78, ZZ)
+XE_COUNTRY(PE,  79, ZZ)
+XE_COUNTRY(PH,  80, ZZ)
+XE_COUNTRY(PK,  81, ZZ)
+XE_COUNTRY(PL,  82, PL)
+XE_COUNTRY(PR,  83, ZZ)
+XE_COUNTRY(PT,  84, PT)
+XE_COUNTRY(PY,  85, ZZ)
+XE_COUNTRY(QA,  86, ZZ)
+XE_COUNTRY(RO,  87, ZZ)
+XE_COUNTRY(RU,  88, RU)
+XE_COUNTRY(SA,  89, SA)
+XE_COUNTRY(SE,  90, SE)
+XE_COUNTRY(SG,  91, SG)
+XE_COUNTRY(SI,  92, ZZ)
+XE_COUNTRY(SK,  93, SK)
+XE_COUNTRY(SV,  95, ZZ)
+XE_COUNTRY(SY,  96, ZZ)
+XE_COUNTRY(TH,  97, ZZ)
+XE_COUNTRY(TN,  98, ZZ)
+XE_COUNTRY(TR,  99, TR)
+XE_COUNTRY(TT, 100, ZZ)
+XE_COUNTRY(TW, 101, TW)
+XE_COUNTRY(UA, 102, ZZ)
+XE_COUNTRY(US, 103, US)
+XE_COUNTRY(UY, 104, ZZ)
+XE_COUNTRY(UZ, 105, ZZ)
+XE_COUNTRY(VE, 106, ZZ)
+XE_COUNTRY(VN, 107, ZZ)
+XE_COUNTRY(YE, 108, ZZ)
+XE_COUNTRY(ZA, 109, ZA)
+XE_COUNTRY(ZW, 110, ZZ)
+XE_COUNTRY_SUFFIX(ZZ, 111, duplicate, ZZ_duplicate)
+XE_COUNTRY_MAXIMUM(ZZ_duplicate)
+
+// clang-format on
+
+#undef XE_COUNTRY_MAXIMUM
+#undef XE_COUNTRY_SUFFIX
+#undef XE_COUNTRY

@@ -11,6 +11,7 @@
 #define XENIA_VFS_DEVICES_STFS_XBOX_H_
 
 #include "xenia/base/string_util.h"
+#include "xenia/kernel/locale_info.h"
 #include "xenia/kernel/util/xex2_info.h"
 
 namespace xe {
@@ -311,13 +312,15 @@ struct XContentMetadata {
     char16_t chars[kNumLanguagesV2 - kNumLanguagesV1][128];
   } description_ex_raw;
 
-  std::u16string display_name(XLanguage language) const {
-    uint32_t lang_id = uint32_t(language) - 1;
+  using Language = kernel::locale_info::Language;
+
+  std::u16string display_name(Language language) const {
+    uint32_t lang_id = static_cast<uint32_t>(language) - 1;
 
     if (lang_id >= kNumLanguagesV2) {
       assert_always();
       // no room for this lang, read from english slot..
-      lang_id = uint32_t(XLanguage::kEnglish) - 1;
+      lang_id = static_cast<uint32_t>(Language::kEnglish) - 1;
     }
 
     const be<uint16_t>* str = 0;
@@ -337,13 +340,13 @@ struct XContentMetadata {
     return load_and_swap<std::u16string>(str);
   }
 
-  std::u16string description(XLanguage language) const {
+  std::u16string description(Language language) const {
     uint32_t lang_id = uint32_t(language) - 1;
 
     if (lang_id >= kNumLanguagesV2) {
       assert_always();
       // no room for this lang, read from english slot..
-      lang_id = uint32_t(XLanguage::kEnglish) - 1;
+      lang_id = uint32_t(Language::kEnglish) - 1;
     }
 
     const be<uint16_t>* str = 0;
@@ -371,13 +374,13 @@ struct XContentMetadata {
     return load_and_swap<std::u16string>(title_name_raw.uint);
   }
 
-  bool set_display_name(XLanguage language, const std::u16string_view value) {
-    uint32_t lang_id = uint32_t(language) - 1;
+  bool set_display_name(Language language, const std::u16string_view value) {
+    uint32_t lang_id = static_cast<uint32_t>(language) - 1;
 
     if (lang_id >= kNumLanguagesV2) {
       assert_always();
       // no room for this lang, store in english slot..
-      lang_id = uint32_t(XLanguage::kEnglish) - 1;
+      lang_id = static_cast<uint32_t>(Language::kEnglish) - 1;
     }
 
     char16_t* str = 0;
@@ -399,13 +402,13 @@ struct XContentMetadata {
     return true;
   }
 
-  bool set_description(XLanguage language, const std::u16string_view value) {
+  bool set_description(Language language, const std::u16string_view value) {
     uint32_t lang_id = uint32_t(language) - 1;
 
     if (lang_id >= kNumLanguagesV2) {
       assert_always();
       // no room for this lang, store in english slot..
-      lang_id = uint32_t(XLanguage::kEnglish) - 1;
+      lang_id = static_cast<uint32_t>(Language::kEnglish) - 1;
     }
 
     char16_t* str = 0;

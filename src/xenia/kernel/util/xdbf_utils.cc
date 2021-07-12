@@ -2,7 +2,7 @@
  ******************************************************************************
  * Xenia : Xbox 360 Emulator Research Project                                 *
  ******************************************************************************
- * Copyright 2016 Ben Vanik. All rights reserved.                             *
+ * Copyright 2021 Ben Vanik. All rights reserved.                             *
  * Released under the BSD license - see LICENSE in the root for more details. *
  ******************************************************************************
  */
@@ -16,6 +16,8 @@ namespace util {
 constexpr fourcc_t kXdbfSignatureXdbf = make_fourcc("XDBF");
 constexpr fourcc_t kXdbfSignatureXstc = make_fourcc("XSTC");
 constexpr fourcc_t kXdbfSignatureXstr = make_fourcc("XSTR");
+
+using Language = locale_info::Language;
 
 XdbfWrapper::XdbfWrapper(const uint8_t* data, size_t data_size)
     : data_(data), data_size_(data_size) {
@@ -55,7 +57,7 @@ XdbfBlock XdbfWrapper::GetEntry(XdbfSection section, uint64_t id) const {
   return {0};
 }
 
-std::string XdbfWrapper::GetStringTableEntry(XLanguage language,
+std::string XdbfWrapper::GetStringTableEntry(Language language,
                                              uint16_t string_id) const {
   auto language_block =
       GetEntry(XdbfSection::kStringTable, static_cast<uint64_t>(language));
@@ -88,21 +90,21 @@ XdbfBlock XdbfGameData::icon() const {
   return GetEntry(XdbfSection::kImage, kXdbfIdTitle);
 }
 
-XLanguage XdbfGameData::default_language() const {
+Language XdbfGameData::default_language() const {
   auto block = GetEntry(XdbfSection::kMetadata, kXdbfIdXstc);
   if (!block.buffer) {
-    return XLanguage::kEnglish;
+    return Language::kEnglish;
   }
   auto xstc = reinterpret_cast<const XdbfXstc*>(block.buffer);
   assert_true(xstc->magic == kXdbfSignatureXstc);
-  return static_cast<XLanguage>(static_cast<uint32_t>(xstc->default_language));
+  return static_cast<Language>(static_cast<uint8_t>(xstc->default_language));
 }
 
 std::string XdbfGameData::title() const {
   return GetStringTableEntry(default_language(), kXdbfIdTitle);
 }
 
-std::string XdbfGameData::title(XLanguage language) const {
+std::string XdbfGameData::title(Language language) const {
   return GetStringTableEntry(language, kXdbfIdTitle);
 }
 

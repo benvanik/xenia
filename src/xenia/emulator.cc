@@ -32,6 +32,7 @@
 #include "xenia/hid/input_driver.h"
 #include "xenia/hid/input_system.h"
 #include "xenia/kernel/kernel_state.h"
+#include "xenia/kernel/locale_info.h"
 #include "xenia/kernel/user_module.h"
 #include "xenia/kernel/util/gameinfo_utils.h"
 #include "xenia/kernel/util/xdbf_utils.h"
@@ -54,6 +55,8 @@ DEFINE_string(
     "or the module specified by the game. Leave blank to launch the default "
     "module.",
     "General");
+
+using Language = xe::kernel::locale_info::Language;
 
 namespace xe {
 
@@ -714,7 +717,7 @@ X_STATUS Emulator::CompleteLaunch(const std::filesystem::path& path,
           module->memory()->TranslateVirtual(resource_data), resource_size);
       if (db.is_valid()) {
         // TODO(gibbed): get title respective to user locale.
-        title_name_ = db.title(XLanguage::kEnglish);
+        title_name_ = db.title(Language::kEnglish);
         if (title_name_.empty()) {
           // If English title is unavailable, get the title in default locale.
           title_name_ = db.title();

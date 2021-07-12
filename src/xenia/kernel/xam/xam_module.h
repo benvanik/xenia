@@ -2,7 +2,7 @@
  ******************************************************************************
  * Xenia : Xbox 360 Emulator Research Project                                 *
  ******************************************************************************
- * Copyright 2013 Ben Vanik. All rights reserved.                             *
+ * Copyright 2021 Ben Vanik. All rights reserved.                             *
  * Released under the BSD license - see LICENSE in the root for more details. *
  ******************************************************************************
  */
@@ -40,8 +40,15 @@ class XamModule : public KernelModule {
   const LoaderData& loader_data() const { return loader_data_; }
   LoaderData& loader_data() { return loader_data_; }
 
+  uint32_t llf_data_address() const { return llf_data_address_; }
+  const std::vector<uint32_t>& llf_entry_addresses() const {
+    return llf_entry_addresses_;
+  }
+
  private:
   LoaderData loader_data_;
+  uint32_t llf_data_address_;
+  std::vector<uint32_t> llf_entry_addresses_;
 };
 
 }  // namespace xam

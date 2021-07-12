@@ -2,7 +2,7 @@
  ******************************************************************************
  * Xenia : Xbox 360 Emulator Research Project                                 *
  ******************************************************************************
- * Copyright 2019 Ben Vanik. All rights reserved.                             *
+ * Copyright 2021 Ben Vanik. All rights reserved.                             *
  * Released under the BSD license - see LICENSE in the root for more details. *
  ******************************************************************************
  */
@@ -14,6 +14,10 @@
 #include "xenia/kernel/util/shim_utils.h"
 #include "xenia/kernel/xboxkrnl/xboxkrnl_private.h"
 #include "xenia/xbox.h"
+
+#if XE_PLATFORM_WIN32
+#include "xenia/base/platform_win.h"
+#endif
 
 DEFINE_int32(user_language, 1,
              "User language ID.\n"
@@ -66,6 +70,68 @@ X_STATUS xeExGetXConfigSetting(uint16_t category, uint16_t setting,
     case 0x0003:
       // XCONFIG_USER_CATEGORY
       switch (setting) {
+#if XE_PLATFORM_WIN32
+          // TODO(gibbed): *REQUIRED BEFORE MERGING* all of the time zone stuff
+          // needs to get appropriate value from user settings / system.
+        case 0x0001: {  // XCONFIG_USER_TIME_ZONE_BIAS
+          TIME_ZONE_INFORMATION tzi;
+          auto id = GetTimeZoneInformation(&tzi);
+          setting_size = 4;
+          xe::store_and_swap<uint32_t>(
+              value, id != TIME_ZONE_ID_INVALID ? tzi.Bias : 0);
+          break;
+        }
+        case 0x0002: {  // XCONFIG_USER_TIME_ZONE_STD_NAME
+          TIME_ZONE_INFORMATION tzi;
+          auto id = GetTimeZoneInformation(&tzi);
+          setting_size = 4;
+          std::memcpy(value, "CST\0", 4);
+          break;
+        }
+        case 0x0003: {  // XCONFIG_USER_TIME_ZONE_DLT_NAME
+          TIME_ZONE_INFORMATION tzi;
+          auto id = GetTimeZoneInformation(&tzi);
+          setting_size = 4;
+          std::memcpy(value, "CDT\0", 4);
+          break;
+        }
+        case 0x0004: {  // XCONFIG_USER_TIME_ZONE_STD_DATE
+          TIME_ZONE_INFORMATION tzi;
+          auto id = GetTimeZoneInformation(&tzi);
+          value[0] = static_cast<uint8_t>(tzi.StandardDate.wMonth);
+          value[1] = static_cast<uint8_t>(tzi.StandardDate.wDay);
+          value[2] = static_cast<uint8_t>(tzi.StandardDate.wDayOfWeek);
+          value[3] = static_cast<uint8_t>(tzi.StandardDate.wHour);
+          setting_size = 4;
+          break;
+        }
+        case 0x0005: {  // XCONFIG_USER_TIME_ZONE_DLT_DATE
+          TIME_ZONE_INFORMATION tzi;
+          auto id = GetTimeZoneInformation(&tzi);
+          value[0] = static_cast<uint8_t>(tzi.DaylightDate.wMonth);
+          value[1] = static_cast<uint8_t>(tzi.DaylightDate.wDay);
+          value[2] = static_cast<uint8_t>(tzi.DaylightDate.wDayOfWeek);
+          value[3] = static_cast<uint8_t>(tzi.DaylightDate.wHour);
+          setting_size = 4;
+          break;
+        }
+        case 0x0006: {  // XCONFIG_USER_TIME_ZONE_STD_BIAS
+          TIME_ZONE_INFORMATION tzi;
+          auto id = GetTimeZoneInformation(&tzi);
+          setting_size = 4;
+          xe::store_and_swap<uint32_t>(
+              value, id != TIME_ZONE_ID_INVALID ? tzi.StandardBias : 0);
+          break;
+        }
+        case 0x0007: {  // XCONFIG_USER_TIME_ZONE_DLT_BIAS
+          TIME_ZONE_INFORMATION tzi;
+          auto id = GetTimeZoneInformation(&tzi);
+          setting_size = 4;
+          xe::store_and_swap<uint32_t>(
+              value, id != TIME_ZONE_ID_INVALID ? tzi.DaylightBias : 0);
+          break;
+        }
+#else
         case 0x0001:  // XCONFIG_USER_TIME_ZONE_BIAS
         case 0x0002:  // XCONFIG_USER_TIME_ZONE_STD_NAME
         case 0x0003:  // XCONFIG_USER_TIME_ZONE_DLT_NAME
@@ -77,6 +143,7 @@ X_STATUS xeExGetXConfigSetting(uint16_t category, uint16_t setting,
           // TODO(benvanik): get this value.
           xe::store_and_swap<uint32_t>(value, 0);
           break;
+#endif
         case 0x0009:  // XCONFIG_USER_LANGUAGE
           setting_size = 4;
           xe::store_and_swap<uint32_t>(value, cvars::user_language);
@@ -85,11 +152,23 @@ X_STATUS xeExGetXConfigSetting(uint16_t category, uint16_t setting,
           setting_size = 4;
           xe::store_and_swap<uint32_t>(value, 0x00040000);
           break;
-        case 0x000C:  // XCONFIG_USER_RETAIL_FLAGS
-          setting_size = 4;
+        case 0x000C: {  // XCONFIG_USER_RETAIL_FLAGS
           // TODO(benvanik): get this value.
-          xe::store_and_swap<uint32_t>(value, 0);
+          uint32_t flags = 0;
+#if XE_PLATFORM_WIN32
+          TIME_ZONE_INFORMATION tzi;
+          auto id = GetTimeZoneInformation(&tzi);
+          if (id != TIME_ZONE_ID_DAYLIGHT) {
+            flags |= 0x02;  // DST off
+          }
+#endif
+          flags |= 0x04;  // network initialized?
+          // flags |= 0x08;  // 24-hour clock
+          flags |= 0x40;  // dashboard initial setup complete
+          setting_size = 4;
+          xe::store_and_swap<uint32_t>(value, flags);
           break;
+        }
         case 0x000E:  // XCONFIG_USER_COUNTRY
           setting_size = 1;
           value[0] = static_cast<uint8_t>(cvars::user_country);
@@ -123,7 +202,7 @@ X_STATUS xeExGetXConfigSetting(uint16_t category, uint16_t setting,
 }
 
 dword_result_t ExGetXConfigSetting(word_t category, word_t setting,
-                                   lpdword_t buffer_ptr, word_t buffer_size,
+                                   lpvoid_t buffer_ptr, word_t buffer_size,
                                    lpword_t required_size_ptr) {
   uint16_t required_size = 0;
   X_STATUS result = xeExGetXConfigSetting(category, setting, buffer_ptr,
@@ -136,6 +215,12 @@ dword_result_t ExGetXConfigSetting(word_t category, word_t setting,
   return result;
 }
 DECLARE_XBOXKRNL_EXPORT1(ExGetXConfigSetting, kModules, kImplemented);
+
+dword_result_t ExSetXConfigSetting(word_t category, word_t setting,
+                                   lpvoid_t buffer_ptr, word_t buffer_size) {
+  return 0;
+}
+DECLARE_XBOXKRNL_EXPORT1(ExSetXConfigSetting, kModules, kStub);
 
 void RegisterXConfigExports(xe::cpu::ExportResolver* export_resolver,
                             KernelState* kernel_state) {}

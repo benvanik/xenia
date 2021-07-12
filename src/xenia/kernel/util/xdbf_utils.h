@@ -2,7 +2,7 @@
  ******************************************************************************
  * Xenia : Xbox 360 Emulator Research Project                                 *
  ******************************************************************************
- * Copyright 2016 Ben Vanik. All rights reserved.                             *
+ * Copyright 2021 Ben Vanik. All rights reserved.                             *
  * Released under the BSD license - see LICENSE in the root for more details. *
  ******************************************************************************
  */
@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "xenia/base/memory.h"
+#include "xenia/kernel/locale_info.h"
 #include "xenia/xbox.h"
 
 namespace xe {
@@ -51,7 +52,8 @@ class XdbfWrapper {
 
   // Gets a string from the string table in the given language.
   // Returns the empty string if the entry is not found.
-  std::string GetStringTableEntry(XLanguage language, uint16_t string_id) const;
+  std::string GetStringTableEntry(locale_info::Language language,
+                                  uint16_t string_id) const;
 
  protected:
 #pragma pack(push, 1)
@@ -121,12 +123,12 @@ class XdbfGameData : public XdbfWrapper {
   XdbfBlock icon() const;
 
   // The game's default language.
-  XLanguage default_language() const;
+  locale_info::Language default_language() const;
 
   // The game's title in its default language.
   std::string title() const;
 
-  std::string title(XLanguage language) const;
+  std::string title(locale_info::Language language) const;
 };
 
 }  // namespace util

@@ -2,7 +2,7 @@
  ******************************************************************************
  * Xenia : Xbox 360 Emulator Research Project                                 *
  ******************************************************************************
- * Copyright 2020 Ben Vanik. All rights reserved.                             *
+ * Copyright 2021 Ben Vanik. All rights reserved.                             *
  * Released under the BSD license - see LICENSE in the root for more details. *
  ******************************************************************************
  */
@@ -117,6 +117,7 @@ typedef uint32_t X_HRESULT;
 #define X_E_FAIL                                static_cast<X_HRESULT>(0x80004005L)
 #define X_E_NO_MORE_FILES                       X_HRESULT_FROM_WIN32(X_ERROR_NO_MORE_FILES)
 #define X_E_INVALIDARG                          X_HRESULT_FROM_WIN32(X_ERROR_INVALID_PARAMETER)
+#define X_E_BUFFER_TOO_SMALL                    X_HRESULT_FROM_WIN32(X_ERROR_INSUFFICIENT_BUFFER)
 #define X_E_DEVICE_NOT_CONNECTED                X_HRESULT_FROM_WIN32(X_ERROR_DEVICE_NOT_CONNECTED)
 #define X_E_NOTFOUND                            X_HRESULT_FROM_WIN32(X_ERROR_NOT_FOUND)
 #define X_E_NO_SUCH_USER                        X_HRESULT_FROM_WIN32(X_ERROR_NO_SUCH_USER)
@@ -322,27 +323,6 @@ typedef struct {
 static_assert_size(X_EXCEPTION_RECORD, 0x50);
 
 #pragma pack(pop)
-
-// Found by dumping the kSectionStringTable sections of various games:
-// and the language list at
-// https://free60project.github.io/wiki/Profile_Account/
-enum class XLanguage : uint32_t {
-  kInvalid = 0,
-  kEnglish = 1,
-  kJapanese = 2,
-  kGerman = 3,
-  kFrench = 4,
-  kSpanish = 5,
-  kItalian = 6,
-  kKorean = 7,
-  kTChinese = 8,
-  kPortuguese = 9,
-  kSChinese = 10,
-  kPolish = 11,
-  kRussian = 12,
-  // STFS headers can't support any more languages than these
-  kMaxLanguages = 13
-};
 
 enum class XContentType : uint32_t {
   kSavedGame = 0x00000001,

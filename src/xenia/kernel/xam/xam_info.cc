@@ -2,7 +2,7 @@
  ******************************************************************************
  * Xenia : Xbox 360 Emulator Research Project                                 *
  ******************************************************************************
- * Copyright 2020 Ben Vanik. All rights reserved.                             *
+ * Copyright 2021 Ben Vanik. All rights reserved.                             *
  * Released under the BSD license - see LICENSE in the root for more details. *
  ******************************************************************************
  */
@@ -55,54 +55,6 @@ dword_result_t XamGetOnlineSchema() {
   return schema_guest;
 }
 DECLARE_XAM_EXPORT1(XamGetOnlineSchema, kNone, kImplemented);
-
-#if XE_PLATFORM_WIN32
-static SYSTEMTIME xeGetLocalSystemTime(uint64_t filetime) {
-  FILETIME t;
-  t.dwHighDateTime = filetime >> 32;
-  t.dwLowDateTime = (uint32_t)filetime;
-
-  SYSTEMTIME st;
-  SYSTEMTIME local_st;
-  FileTimeToSystemTime(&t, &st);
-  SystemTimeToTzSpecificLocalTime(NULL, &st, &local_st);
-  return local_st;
-}
-#endif
-
-void XamFormatDateString(dword_t unk, qword_t filetime, lpvoid_t output_buffer,
-                         dword_t output_count) {
-  std::memset(output_buffer, 0, output_count * sizeof(char16_t));
-
-// TODO: implement this for other platforms
-#if XE_PLATFORM_WIN32
-  auto st = xeGetLocalSystemTime(filetime);
-  // TODO: format this depending on users locale?
-  auto str = fmt::format(u"{:02d}/{:02d}/{}", st.wMonth, st.wDay, st.wYear);
-  xe::string_util::copy_and_swap_truncating(output_buffer.as<char16_t*>(), str,
-                                            output_count);
-#else
-  assert_always();
-#endif
-}
-DECLARE_XAM_EXPORT1(XamFormatDateString, kNone, kImplemented);
-
-void XamFormatTimeString(dword_t unk, qword_t filetime, lpvoid_t output_buffer,
-                         dword_t output_count) {
-  std::memset(output_buffer, 0, output_count * sizeof(char16_t));
-
-// TODO: implement this for other platforms
-#if XE_PLATFORM_WIN32
-  auto st = xeGetLocalSystemTime(filetime);
-  // TODO: format this depending on users locale?
-  auto str = fmt::format(u"{:02d}:{:02d}", st.wHour, st.wMinute);
-  xe::string_util::copy_and_swap_truncating(output_buffer.as<char16_t*>(), str,
-                                            output_count);
-#else
-  assert_always();
-#endif
-}
-DECLARE_XAM_EXPORT1(XamFormatTimeString, kNone, kImplemented);
 
 dword_result_t keXamBuildResourceLocator(uint64_t module,
                                          const std::u16string& container,
@@ -203,23 +155,6 @@ uint32_t xeXGetGameRegion() { return 0xFFFFu; }
 
 dword_result_t XGetGameRegion() { return xeXGetGameRegion(); }
 DECLARE_XAM_EXPORT1(XGetGameRegion, kNone, kStub);
-
-dword_result_t XGetLanguage() {
-  auto desired_language = XLanguage::kEnglish;
-
-  // Switch the language based on game region.
-  // TODO(benvanik): pull from xex header.
-  uint32_t game_region = XEX_REGION_NTSCU;
-  if (game_region & XEX_REGION_NTSCU) {
-    desired_language = XLanguage::kEnglish;
-  } else if (game_region & XEX_REGION_NTSCJ) {
-    desired_language = XLanguage::kJapanese;
-  }
-  // Add more overrides?
-
-  return uint32_t(desired_language);
-}
-DECLARE_XAM_EXPORT1(XGetLanguage, kNone, kImplemented);
 
 dword_result_t XamGetExecutionId(lpdword_t info_ptr) {
   auto module = kernel_state()->GetExecutableModule();
