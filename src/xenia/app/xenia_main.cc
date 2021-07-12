@@ -47,7 +47,11 @@
 #include "third_party/xbyak/xbyak/xbyak_util.h"
 
 DEFINE_string(apu, "any", "Audio system. Use: [any, nop, sdl, xaudio2]", "APU");
-DEFINE_string(gpu, "any", "Graphics system. Use: [any, d3d12, vulkan, null]",
+DEFINE_string(gpu, "any",
+              "Graphics system. Use: [any, d3d12, vulkan, null]\nWARNING: "
+              "The Vulkan-based graphics engine is obsolete and known to be "
+              "buggy.\nIt is highly "
+              "recommended to use d3d12 instead.",
               "GPU");
 DEFINE_string(hid, "any", "Input system. Use: [any, nop, sdl, winkey, xinput]",
               "HID");
