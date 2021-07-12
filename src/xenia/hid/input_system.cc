@@ -16,6 +16,8 @@
 namespace xe {
 namespace hid {
 
+DEFINE_bool(vibration, true, "Toggle controller vibration.", "HID");
+
 InputSystem::InputSystem(xe::ui::Window* window) : window_(window) {}
 
 InputSystem::~InputSystem() = default;
@@ -62,10 +64,14 @@ X_RESULT InputSystem::GetState(uint32_t user_index, X_INPUT_STATE* out_state) {
 X_RESULT InputSystem::SetState(uint32_t user_index,
                                X_INPUT_VIBRATION* vibration) {
   SCOPE_profile_cpu_f("hid");
-
+  X_INPUT_VIBRATION modified_vibration = X_INPUT_VIBRATION(*vibration);
+  if (!cvars::vibration) {
+    modified_vibration.left_motor_speed = 0;
+    modified_vibration.right_motor_speed = 0;
+  }
   bool any_connected = false;
   for (auto& driver : drivers_) {
-    X_RESULT result = driver->SetState(user_index, vibration);
+    X_RESULT result = driver->SetState(user_index, &modified_vibration);
     if (result != X_ERROR_DEVICE_NOT_CONNECTED) {
       any_connected = true;
     }
