@@ -47,7 +47,7 @@ X_HRESULT XLiveBaseApp::DispatchMessageSync(uint32_t message,
       // XONLINE_SERVICE_INFO structure.
       XELOGD("CXLiveLogon::GetServiceInfo({:08X}, {:08X})", buffer_ptr,
              buffer_length);
-      return 1229;  // ERROR_CONNECTION_INVALID
+      return 0x80151802;  // ERROR_CONNECTION_INVALID
     }
     case 0x00058020: {
       // 0x00058004 is called right before this.
