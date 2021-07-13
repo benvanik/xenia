@@ -177,6 +177,25 @@ void XmaContext::SwapInputBuffer(XMA_CONTEXT_DATA* data) {
   data->input_buffer_read_offset = 0;
 }
 
+bool XmaContext::TrySetupNextLoop(XMA_CONTEXT_DATA* data,
+                                  bool ignore_input_buffer_offset) {
+  // Setup the input buffer offset if next loop exists.
+  // TODO(Pseudo-Kernel): Need to handle loop in the following cases.
+  // 1. loop_start == loop_end == 0
+  // 2. loop_start > loop_end && loop_count > 0
+  if (data->loop_count > 0 && data->loop_start < data->loop_end &&
+      (ignore_input_buffer_offset ||
+       data->input_buffer_read_offset >= data->loop_end)) {
+    // Loop back to the beginning.
+    data->input_buffer_read_offset = data->loop_start;
+    if (data->loop_count < 255) {
+      data->loop_count--;
+    }
+    return true;
+  }
+  return false;
+}
+
 /*
 void XmaContext::NextPacket(
     uint8_t* input_buffer,
@@ -364,12 +383,17 @@ void XmaContext::Decode(XMA_CONTEXT_DATA* data) {
   assert_false(data->stop_when_done);
   assert_false(data->interrupt_when_done);
   static int total_samples = 0;
+  bool reuse_input_buffer = false;
   // Decode until we can't write any more data.
   while (output_remaining_bytes > 0) {
     if (!data->input_buffer_0_valid && !data->input_buffer_1_valid) {
       // Out of data.
       break;
     }
+
+    // Setup the input buffer if we are at loop_end.
+    // The input buffer must not be swapped out until all loops are processed.
+    reuse_input_buffer = TrySetupNextLoop(data, false);
 
     // assert_true(packets_skip_ == 0);
     // assert_true(split_frame_len_ == 0);
@@ -392,7 +416,13 @@ void XmaContext::Decode(XMA_CONTEXT_DATA* data) {
         packets_skip_--;
         packet_idx++;
         if (packet_idx >= current_input_packet_count) {
-          SwapInputBuffer(data);
+          if (!reuse_input_buffer) {
+            // Last packet. Try setup once more.
+            reuse_input_buffer = TrySetupNextLoop(data, true);
+          }
+          if (!reuse_input_buffer) {
+            SwapInputBuffer(data);
+          }
           return;
         }
       }
@@ -524,7 +554,13 @@ void XmaContext::Decode(XMA_CONTEXT_DATA* data) {
           packet += kBytesPerPacket;
           packet_idx++;
           if (packet_idx >= current_input_packet_count) {
-            SwapInputBuffer(data);
+            if (!reuse_input_buffer) {
+              // Last packet. Try setup once more.
+              reuse_input_buffer = TrySetupNextLoop(data, true);
+            }
+            if (!reuse_input_buffer) {
+              SwapInputBuffer(data);
+            }
             return;
           }
         }
@@ -606,7 +642,13 @@ void XmaContext::Decode(XMA_CONTEXT_DATA* data) {
           packets_skip_--;
           packet_idx++;
           if (packet_idx >= current_input_packet_count) {
-            SwapInputBuffer(data);
+            if (!reuse_input_buffer) {
+              // Last packet. Try setup once more.
+              reuse_input_buffer = TrySetupNextLoop(data, true);
+            }
+            if (!reuse_input_buffer) {
+              SwapInputBuffer(data);
+            }
             return;
           }
         }
@@ -618,7 +660,13 @@ void XmaContext::Decode(XMA_CONTEXT_DATA* data) {
         // Next packet but we already skipped to it
         if (packet_idx >= current_input_packet_count) {
           // Buffer is fully used
-          SwapInputBuffer(data);
+          if (!reuse_input_buffer) {
+            // Last packet. Try setup once more.
+            reuse_input_buffer = TrySetupNextLoop(data, true);
+          }
+          if (!reuse_input_buffer) {
+            SwapInputBuffer(data);
+          }
           break;
         }
         offset =

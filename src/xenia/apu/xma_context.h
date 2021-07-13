@@ -171,6 +171,8 @@ class XmaContext {
 
  private:
   static void SwapInputBuffer(XMA_CONTEXT_DATA* data);
+  static bool TrySetupNextLoop(XMA_CONTEXT_DATA* data,
+                               bool ignore_input_buffer_offset);
   static void NextPacket(XMA_CONTEXT_DATA* data);
   static int GetSampleRate(int id);
   // Get the offset of the next frame. Does not traverse packets.
