@@ -264,9 +264,11 @@ X_STATUS Emulator::LaunchPath(const std::filesystem::path& path) {
   auto extension = xe::utf8::lower_ascii(xe::path_to_utf8(path.extension()));
   if (extension == ".xex" || extension == ".elf" || extension == ".exe") {
     // Treat as a naked xex file.
+    XELOGI("LaunchXexPath: {}", xe::path_to_utf8(path));
     return LaunchXexFile(path);
   } else {
     // Assume a disc image.
+    XELOGI("LaunchDiscPath: {}", xe::path_to_utf8(path));
     return LaunchDiscImage(path);
   }
 }
