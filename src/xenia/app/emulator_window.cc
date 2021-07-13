@@ -31,6 +31,9 @@
 
 DECLARE_bool(debug);
 
+DEFINE_int32(window_height, 720, "Window height", "UI");
+DEFINE_int32(window_width, 1280, "Window width", "UI");
+
 namespace xe {
 namespace app {
 
@@ -284,7 +287,7 @@ bool EmulatorWindow::Initialize() {
 
   window_->set_main_menu(std::move(main_menu));
 
-  window_->Resize(1280, 720);
+  window_->Resize(cvars::window_width, cvars::window_height);
 
   window_->DisableMainMenu();
 
