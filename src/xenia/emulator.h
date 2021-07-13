@@ -18,6 +18,7 @@
 #include "xenia/base/exception_handler.h"
 #include "xenia/kernel/kernel_state.h"
 #include "xenia/memory.h"
+#include "xenia/patcher/patcher.h"
 #include "xenia/vfs/virtual_file_system.h"
 #include "xenia/xbox.h"
 
@@ -115,6 +116,10 @@ class Emulator {
   // This is effectively the guest operating system.
   kernel::KernelState* kernel_state() const { return kernel_state_.get(); }
 
+  patcher::PatchingSystem* patching_system() const {
+    return patching_system_.get();
+  }
+
   // Initializes the emulator and configures all components.
   // The given window is used for display and the provided functions are used
   // to create subsystems as required.
@@ -194,6 +199,7 @@ class Emulator {
 
   std::unique_ptr<cpu::ExportResolver> export_resolver_;
   std::unique_ptr<vfs::VirtualFileSystem> file_system_;
+  std::unique_ptr<patcher::PatchingSystem> patching_system_;
 
   std::unique_ptr<kernel::KernelState> kernel_state_;
   kernel::object_ref<kernel::XThread> main_thread_;

@@ -202,6 +202,8 @@ X_STATUS Emulator::Setup(
   // Bring up the virtual filesystem used by the kernel.
   file_system_ = std::make_unique<xe::vfs::VirtualFileSystem>();
 
+  patching_system_ = std::make_unique<xe::patcher::PatchingSystem>();
+
   // Shared kernel state.
   kernel_state_ = std::make_unique<xe::kernel::KernelState>(this);
 
@@ -724,6 +726,9 @@ X_STATUS Emulator::CompleteLaunch(const std::filesystem::path& path,
           display_window_->SetIcon(icon_block.buffer, icon_block.size);
         }
       }
+
+      patching_system_->ApplyPatchesForTitle(
+          kernel_state()->memory(), module->title_id(), module->hash());
     }
   }
 
