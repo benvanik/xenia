@@ -620,6 +620,16 @@ int InstrEmit_mfspr(PPCHIRBuilder& f, const InstrData& i) {
       // TBU
       v = f.Shr(f.LoadClock(), 32);
       break;
+    case 287:
+      // [ Processor Version Register (PVR) ]
+      // PVR is a 32 bit, read-only register within the supervisor level.
+      // Bits 0 to 15 are the version number.
+      // Bits 16 to 31 are the revision number.
+      // Known Values: 0x710600?, 0x710700, 0x710800 (Corona?);
+      // Note: Some XEXs (such as mfgbootlauncher.xex) may check for a value
+      // that's less than 0x710700.
+      v = f.LoadConstantUint64(cvars::pvr);
+      break;
     default:
       XEINSTRNOTIMPLEMENTED();
       return 1;

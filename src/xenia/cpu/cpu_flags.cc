@@ -48,3 +48,6 @@ DEFINE_bool(break_condition_truncate, true, "truncate value to 32-bits", "CPU");
 
 DEFINE_bool(break_on_debugbreak, true, "int3 on JITed __debugbreak requests.",
             "CPU");
+
+// Other:
+DEFINE_uint64(pvr, 0x710700, "Processor version & revision number.", "CPU");
