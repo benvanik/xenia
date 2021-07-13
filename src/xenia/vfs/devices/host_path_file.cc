@@ -66,5 +66,13 @@ X_STATUS HostPathFile::SetLength(size_t length) {
   }
 }
 
+X_STATUS HostPathFile::SetName(const std::string_view file_name) {
+  if (file_handle_->Rename(file_name)) {
+    return X_STATUS_SUCCESS;
+  } else {
+    return X_STATUS_NO_SUCH_FILE;
+  }
+}
+
 }  // namespace vfs
 }  // namespace xe

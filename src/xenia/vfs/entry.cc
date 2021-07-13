@@ -44,6 +44,14 @@ void Entry::Dump(xe::StringBuffer* string_buffer, int indent) {
   }
 }
 
+void Entry::set_name(const std::string_view path) {
+  absolute_path_ = xe::utf8::join_guest_paths(device_->mount_path(), path);
+  path_ = xe::utf8::find_name_from_guest_path(path);
+  name_ = xe::utf8::find_name_from_guest_path(path);
+
+  SetHostFileName(name_);
+}
+
 bool Entry::is_read_only() const { return device_->is_read_only(); }
 
 Entry* Entry::GetChild(const std::string_view name) {

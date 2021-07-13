@@ -107,6 +107,13 @@ struct X_FILE_NETWORK_OPEN_INFORMATION {
 };
 static_assert_size(X_FILE_NETWORK_OPEN_INFORMATION, 56);
 
+struct X_FILE_RENAME_INFORMATION {
+  be<uint32_t> rename;
+  be<uint32_t> root_dir_handle;
+  X_ANSI_STRING ansi_string;
+};
+static_assert_size(X_FILE_RENAME_INFORMATION, 16);
+
 #pragma pack(pop)
 
 }  // namespace kernel

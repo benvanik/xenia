@@ -94,6 +94,8 @@ class Entry {
   uint64_t access_timestamp() const { return access_timestamp_; }
   uint64_t write_timestamp() const { return write_timestamp_; }
 
+  void set_name(const std::string_view name);
+
   bool is_read_only() const;
 
   Entry* GetChild(const std::string_view name);
@@ -131,6 +133,7 @@ class Entry {
     return nullptr;
   }
   virtual bool DeleteEntryInternal(Entry* entry) { return false; }
+  virtual void SetHostFileName(const std::string_view filename){};
 
   xe::global_critical_region global_critical_region_;
   Device* device_;

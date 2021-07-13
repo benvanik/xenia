@@ -109,6 +109,10 @@ bool HostPathEntry::DeleteEntryInternal(Entry* entry) {
   }
 }
 
+void HostPathEntry::SetHostFileName(const std::string_view filename) {
+  host_path_ = host_path_.parent_path() / filename;
+}
+
 void HostPathEntry::update() {
   xe::filesystem::FileInfo file_info;
   if (!xe::filesystem::GetInfo(host_path_, &file_info)) {

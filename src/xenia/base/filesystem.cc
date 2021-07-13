@@ -24,5 +24,13 @@ bool CreateParentFolder(const std::filesystem::path& path) {
   return true;
 }
 
+bool FileHandle::Rename(const std::string_view file_name) {
+  std::error_code error_code;
+  auto new_path = path().parent_path() / file_name;
+
+  std::filesystem::rename(path(), new_path, error_code);
+  return error_code.value();
+}
+
 }  // namespace filesystem
 }  // namespace xe
