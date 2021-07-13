@@ -75,7 +75,7 @@ DEFINE_path(
     "Storage");
 
 DEFINE_bool(mount_scratch, false, "Enable scratch mount", "Storage");
-DEFINE_bool(mount_cache, false, "Enable cache mount", "Storage");
+DEFINE_bool(mount_cache, true, "Enable cache mount", "Storage");
 
 DEFINE_transient_path(target, "",
                       "Specifies the target .xex or .iso to execute.",
@@ -306,27 +306,22 @@ int xenia_main(const std::vector<std::string>& args) {
   }
 
   if (cvars::mount_cache) {
-    auto cache0_device =
-        std::make_unique<xe::vfs::HostPathDevice>("\\CACHE0", "cache0", false);
-    if (!cache0_device->Initialize()) {
-      XELOGE("Unable to scan cache0 path");
-    } else {
-      if (!emulator->file_system()->RegisterDevice(std::move(cache0_device))) {
-        XELOGE("Unable to register cache0 path");
-      } else {
-        emulator->file_system()->RegisterSymbolicLink("cache0:", "\\CACHE0");
-      }
-    }
+    constexpr std::pair<std::string_view, std::string_view> cache_mounts[] = {
+        {"\\CACHE", "cache"}, {"\\CACHE0", "cache0"}, {"\\CACHE1", "cache1"}};
 
-    auto cache1_device =
-        std::make_unique<xe::vfs::HostPathDevice>("\\CACHE1", "cache1", false);
-    if (!cache1_device->Initialize()) {
-      XELOGE("Unable to scan cache1 path");
-    } else {
-      if (!emulator->file_system()->RegisterDevice(std::move(cache1_device))) {
-        XELOGE("Unable to register cache1 path");
+    for (auto const cache_mount : cache_mounts) {
+      auto cache_device = std::make_unique<xe::vfs::HostPathDevice>(
+          cache_mount.first, cache_mount.second, false);
+
+      if (!cache_device->Initialize()) {
+        XELOGE("Unable to scan {} path", cache_mount.second);
       } else {
-        emulator->file_system()->RegisterSymbolicLink("cache1:", "\\CACHE1");
+        if (!emulator->file_system()->RegisterDevice(std::move(cache_device))) {
+          XELOGE("Unable to register {} path", cache_mount.second);
+        } else {
+          emulator->file_system()->RegisterSymbolicLink(
+              std::string(cache_mount.second) + ':', cache_mount.first);
+        }
       }
     }
   }
