@@ -27,6 +27,8 @@ namespace xboxkrnl {
 
 class XboxkrnlModule : public KernelModule {
  public:
+  static constexpr size_t kExLoadedImageNameSize = 255 + 1;
+
   XboxkrnlModule(Emulator* emulator, KernelState* kernel_state);
   virtual ~XboxkrnlModule();
 

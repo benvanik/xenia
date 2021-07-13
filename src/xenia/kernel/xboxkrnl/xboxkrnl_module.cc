@@ -189,6 +189,16 @@ XboxkrnlModule::XboxkrnlModule(Emulator* emulator, KernelState* kernel_state)
                                        ordinals::XexExecutableModuleHandle,
                                        ppXexExecutableModuleHandle);
 
+  // ExLoadedImageName (char*)
+  // The full path to loaded image/xex including its name.
+  // Used usually in custom dashboards (Aurora)
+  // Todo(Gliniak): Confirm that official kernel always allocate space for this
+  // variable.
+  uint32_t ppExLoadedImageName =
+      memory_->SystemHeapAlloc(kExLoadedImageNameSize);
+  export_resolver_->SetVariableMapping(
+      "xboxkrnl.exe", ordinals::ExLoadedImageName, ppExLoadedImageName);
+
   // ExLoadedCommandLine (char*)
   // The name of the xex. Not sure this is ever really used on real devices.
   // Perhaps it's how swap disc/etc data is sent?
