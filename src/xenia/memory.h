@@ -113,6 +113,17 @@ class BaseHeap {
   // Size of each page within the heap range in bytes.
   uint32_t page_size() const { return page_size_; }
 
+  // Amount of pages assigned to heap
+  uint32_t total_page_count() const { return uint32_t(page_table_.size()); }
+
+  // Sum of unreserved pages in heap
+  uint32_t unreserved_page_count() const { return unreserved_page_count_; }
+
+  // Sum of reserved pages in heap
+  uint32_t reserved_page_count() const {
+    return total_page_count() - unreserved_page_count();
+  }
+
   // Type of specified heap
   HeapType heap_type() const { return heap_type_; }
 
@@ -131,9 +142,6 @@ class BaseHeap {
 
   // Dumps information about all allocations within the heap to the log.
   void DumpMap();
-
-  uint32_t GetTotalPageCount();
-  uint32_t GetUnreservedPageCount();
 
   // Allocates pages with the given properties and allocation strategy.
   // This can reserve and commit the pages as well as set protection modes.
@@ -206,6 +214,7 @@ class BaseHeap {
   uint32_t heap_size_;
   uint32_t page_size_;
   uint32_t host_address_offset_;
+  uint32_t unreserved_page_count_;
   xe::global_critical_region global_critical_region_;
   std::vector<PageEntry> page_table_;
 };
@@ -471,6 +480,11 @@ class Memory {
 
   // Gets the physical base heap.
   VirtualHeap* GetPhysicalHeap();
+
+  void GetHeapsPageStatsSummary(const BaseHeap* const* provided_heaps,
+                                size_t heaps_count, uint32_t& unreserved_pages,
+                                uint32_t& reserved_pages, uint32_t& used_pages,
+                                uint32_t& reserved_bytes);
 
   // Dumps a map of all allocated memory to the log.
   void DumpMap();

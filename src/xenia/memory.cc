@@ -353,6 +353,27 @@ BaseHeap* Memory::LookupHeapByType(bool physical, uint32_t page_size) {
 
 VirtualHeap* Memory::GetPhysicalHeap() { return &heaps_.physical; }
 
+void Memory::GetHeapsPageStatsSummary(const BaseHeap* const* provided_heaps,
+                                      size_t heaps_count,
+                                      uint32_t& unreserved_pages,
+                                      uint32_t& reserved_pages,
+                                      uint32_t& used_pages,
+                                      uint32_t& reserved_bytes) {
+  auto lock = global_critical_region_.Acquire();
+  for (size_t i = 0; i < heaps_count; i++) {
+    const BaseHeap* heap = provided_heaps[i];
+    uint32_t heap_unreserved_pages = heap->unreserved_page_count();
+    uint32_t heap_reserved_pages = heap->reserved_page_count();
+
+    unreserved_pages += heap_unreserved_pages;
+    reserved_pages += heap_reserved_pages;
+    used_pages += ((heap->total_page_count() - heap_unreserved_pages) *
+                   heap->page_size()) /
+                  4096;
+    reserved_bytes += heap_reserved_pages * heap->page_size();
+  }
+}
+
 uint32_t Memory::HostToGuestVirtual(const void* host_address) const {
   size_t virtual_address = reinterpret_cast<size_t>(host_address) -
                            reinterpret_cast<size_t>(virtual_membase_);
@@ -650,6 +671,7 @@ void BaseHeap::Initialize(Memory* memory, uint8_t* membase, HeapType heap_type,
   page_size_ = page_size;
   host_address_offset_ = host_address_offset;
   page_table_.resize(heap_size / page_size);
+  unreserved_page_count_ = uint32_t(page_table_.size());
 }
 
 void BaseHeap::Dispose() {
@@ -714,35 +736,6 @@ void BaseHeap::DumpMap() {
            heap_base_ + (heap_size_ - 1),
            page_table_.size() - empty_span_start);
   }
-}
-
-uint32_t BaseHeap::GetTotalPageCount() { return uint32_t(page_table_.size()); }
-
-uint32_t BaseHeap::GetUnreservedPageCount() {
-  auto global_lock = global_critical_region_.Acquire();
-  uint32_t count = 0;
-  bool is_empty_span = false;
-  uint32_t empty_span_start = 0;
-  uint32_t size = uint32_t(page_table_.size());
-  for (uint32_t i = 0; i < size; ++i) {
-    auto& page = page_table_[i];
-    if (!page.state) {
-      if (!is_empty_span) {
-        is_empty_span = true;
-        empty_span_start = i;
-      }
-      continue;
-    }
-    if (is_empty_span) {
-      is_empty_span = false;
-      count += i - empty_span_start;
-    }
-    i += page.region_page_count - 1;
-  }
-  if (is_empty_span) {
-    count += size - empty_span_start;
-  }
-  return count;
 }
 
 bool BaseHeap::Save(ByteStream* stream) {
@@ -908,6 +901,9 @@ bool BaseHeap::AllocFixed(uint32_t base_address, uint32_t size,
     }
     page_entry.allocation_protect = protect;
     page_entry.current_protect = protect;
+    if (!(page_entry.state & kMemoryAllocationReserve)) {
+      unreserved_page_count_--;
+    }
     page_entry.state = kMemoryAllocationReserve | allocation_type;
   }
 
@@ -1054,6 +1050,7 @@ bool BaseHeap::AllocRange(uint32_t low_address, uint32_t high_address,
     page_entry.allocation_protect = protect;
     page_entry.current_protect = protect;
     page_entry.state = kMemoryAllocationReserve | allocation_type;
+    unreserved_page_count_--;
   }
 
   *out_address = heap_base_ + (start_page_number * page_size_);
@@ -1144,6 +1141,7 @@ bool BaseHeap::Release(uint32_t base_address, uint32_t* out_region_size) {
        ++page_number) {
     auto& page_entry = page_table_[page_number];
     page_entry.qword = 0;
+    unreserved_page_count_++;
   }
 
   return true;
