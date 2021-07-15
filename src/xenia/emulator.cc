@@ -42,6 +42,7 @@
 #include "xenia/ui/imgui_dialog.h"
 #include "xenia/vfs/devices/disc_image_device.h"
 #include "xenia/vfs/devices/host_path_device.h"
+#include "xenia/vfs/devices/null_device.h"
 #include "xenia/vfs/devices/stfs_container_device.h"
 #include "xenia/vfs/virtual_file_system.h"
 
@@ -279,7 +280,7 @@ X_STATUS Emulator::LaunchXexFile(const std::filesystem::path& path) {
   // and then get that symlinked to game:\, so
   // -> game:\foo.xex
 
-  auto mount_path = "\\Device\\Harddisk0\\Partition0";
+  auto mount_path = "\\Device\\Harddisk0\\Partition1";
 
   // Register the local directory in the virtual filesystem.
   auto parent_path = path.parent_path();
@@ -672,6 +673,25 @@ static std::string format_version(xex2_version version) {
 
 X_STATUS Emulator::CompleteLaunch(const std::filesystem::path& path,
                                   const std::string_view module_path) {
+  // Setup NullDevices for raw HDD partition accesses
+  // Cache/STFC code baked into games tries reading/writing to these
+  // By using a NullDevice that just returns success to all IO requests it
+  // should allow games to believe cache/raw disk was accessed successfully
+
+  // NOTE: this should probably be moved to xenia_main.cc, but right now we need
+  // to register the \Device\Harddisk0\ NullDevice _after_ the
+  // \Device\Harddisk0\Partition1 HostPathDevice, otherwise requests to
+  // Partition1 will go to this. Registering during CompleteLaunch allows us to
+  // make sure any HostPathDevices are ready beforehand.
+  // (see comment above cache:\ device registration for more info about why)
+  auto null_paths = {std::string("\\Partition0"), std::string("\\Cache0"),
+                     std::string("\\Cache1")};
+  auto null_device =
+      std::make_unique<vfs::NullDevice>("\\Device\\Harddisk0", null_paths);
+  if (null_device->Initialize()) {
+    file_system_->RegisterDevice(std::move(null_device));
+  }
+
   // Reset state.
   title_id_ = std::nullopt;
   title_name_ = "";

@@ -329,6 +329,22 @@ int xenia_main(const std::vector<std::string>& args) {
         emulator->file_system()->RegisterSymbolicLink("cache1:", "\\CACHE1");
       }
     }
+
+    // Some (older?) games try accessing cache:\ too
+    // NOTE: this must be registered _after_ the cache0/cache1 devices, due to
+    // substring/start_with logic inside VirtualFileSystem::ResolvePath, else
+    // accesses to those devices will go here instead
+    auto cache_device =
+        std::make_unique<xe::vfs::HostPathDevice>("\\CACHE", "cache", false);
+    if (!cache_device->Initialize()) {
+      XELOGE("Unable to scan cache path");
+    } else {
+      if (!emulator->file_system()->RegisterDevice(std::move(cache_device))) {
+        XELOGE("Unable to register cache path");
+      } else {
+        emulator->file_system()->RegisterSymbolicLink("cache:", "\\CACHE");
+      }
+    }
   }
 
   // Set a debug handler.

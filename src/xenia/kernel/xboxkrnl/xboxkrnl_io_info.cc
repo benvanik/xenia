@@ -126,6 +126,13 @@ dword_result_t NtQueryInformationFile(
       out_length = sizeof(*info);
       break;
     }
+    case XFileAlignmentInformation: {
+      // Requested by XMountUtilityDrive XAM-task
+      auto info = info_ptr.as<uint32_t*>();
+      *info = 0;  // FILE_BYTE_ALIGNMENT?
+      out_length = sizeof(*info);
+      break;
+    }
     default: {
       // Unsupported, for now.
       assert_always();

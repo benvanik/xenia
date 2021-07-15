@@ -674,6 +674,66 @@ dword_result_t FscSetCacheElementCount(dword_t unk_0, dword_t unk_1) {
 }
 DECLARE_XBOXKRNL_EXPORT1(FscSetCacheElementCount, kFileSystem, kStub);
 
+dword_result_t NtDeviceIoControlFile(
+    dword_t handle, dword_t event_handle, dword_t apc_routine,
+    dword_t apc_context, dword_t io_status_block, dword_t io_control_code,
+    lpvoid_t input_buffer, dword_t input_buffer_len, lpvoid_t output_buffer,
+    dword_t output_buffer_len) {
+  // Called by XMountUtilityDrive cache-mounting code
+  // (checks if the returned values look valid, values below seem to pass the
+  // checks)
+  const uint32_t cache_size = 0xFF000;
+
+  const uint32_t X_IOCTL_DISK_GET_DRIVE_GEOMETRY = 0x70000;
+  const uint32_t X_IOCTL_DISK_GET_PARTITION_INFO = 0x74004;
+
+  if (io_control_code == X_IOCTL_DISK_GET_DRIVE_GEOMETRY) {
+    if (output_buffer_len < 0x8) {
+      assert_always();
+      return X_STATUS_BUFFER_TOO_SMALL;
+    }
+    xe::store_and_swap<uint32_t>(output_buffer, cache_size / 512);
+    xe::store_and_swap<uint32_t>(output_buffer + 4, 512);
+  } else if (io_control_code == X_IOCTL_DISK_GET_PARTITION_INFO) {
+    if (output_buffer_len < 0x10) {
+      assert_always();
+      return X_STATUS_BUFFER_TOO_SMALL;
+    }
+    xe::store_and_swap<uint64_t>(output_buffer, 0);
+    xe::store_and_swap<uint64_t>(output_buffer + 8, cache_size);
+  } else {
+    XELOGD("NtDeviceIoControlFile(0x{:X}) - unhandled IOCTL!",
+           uint32_t(io_control_code));
+    assert_always();
+    return X_STATUS_INVALID_PARAMETER;
+  }
+
+  return X_STATUS_SUCCESS;
+}
+DECLARE_XBOXKRNL_EXPORT1(NtDeviceIoControlFile, kFileSystem, kStub);
+
+dword_result_t IoCreateDevice(dword_t device_struct, dword_t r4, dword_t r5,
+                              dword_t r6, dword_t r7, lpdword_t out_struct) {
+  // Called from XMountUtilityDrive XAM-task code
+  // That code tries writing things to a pointer at out_struct+0x18
+  // We'll alloc some scratch space for it so it doesn't cause any exceptions
+
+  // 0x24 is guessed size from accesses to out_struct - likely incorrect
+  auto out_guest = kernel_memory()->SystemHeapAlloc(0x24);
+
+  auto out = kernel_memory()->TranslateVirtual<uint8_t*>(out_guest);
+  memset(out, 0, 0x24);
+
+  // XMountUtilityDrive writes some kind of header here
+  // 0x1000 bytes should be enough to store it
+  auto out_guest2 = kernel_memory()->SystemHeapAlloc(0x1000);
+  xe::store_and_swap(out + 0x18, out_guest2);
+
+  *out_struct = out_guest;
+  return X_STATUS_SUCCESS;
+}
+DECLARE_XBOXKRNL_EXPORT1(IoCreateDevice, kFileSystem, kStub);
+
 void RegisterIoExports(xe::cpu::ExportResolver* export_resolver,
                        KernelState* kernel_state) {}
 
